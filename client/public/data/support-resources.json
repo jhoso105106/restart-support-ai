@@ -1,0 +1,93 @@
+[
+  {
+    "id": "hello-work-tokyo",
+    "name": "ハローワーク",
+    "category": "employment",
+    "areas": ["Tokyo", "Chiyoda", "Minato", "All"],
+    "description": "職業相談、職業紹介、雇用保険の手続きなどを行う国の就労支援窓口です。",
+    "website": "https://www.hellowork.mhlw.go.jp/",
+    "targetAge": "全年齢",
+    "sourceName": "厚生労働省 ハローワークインターネットサービス",
+    "sourceUrl": "https://www.hellowork.mhlw.go.jp/"
+  },
+  {
+    "id": "tokyo-shigoto-center",
+    "name": "東京しごとセンター",
+    "category": "employment",
+    "areas": ["Tokyo", "Chiyoda", "Minato"],
+    "description": "就職相談、セミナー、職業紹介などを提供する東京都の就労支援施設です。",
+    "address": "東京都千代田区飯田橋3-10-3",
+    "phone": "03-5211-1571",
+    "website": "https://www.tokyoshigoto.jp/",
+    "targetAge": "全年齢",
+    "sourceName": "東京しごとセンター",
+    "sourceUrl": "https://www.tokyoshigoto.jp/"
+  },
+  {
+    "id": "kokoro-health-dial",
+    "name": "こころの健康相談統一ダイヤル",
+    "category": "mental",
+    "areas": ["Tokyo", "Chiyoda", "Minato", "All"],
+    "description": "こころの健康に関する相談窓口につながる全国共通の電話相談です。",
+    "phone": "0570-064-556",
+    "businessHours": "受付時間は地域により異なります。",
+    "targetAge": "全年齢",
+    "sourceName": "厚生労働省 こころの健康相談統一ダイヤル",
+    "sourceUrl": "https://www.mhlw.go.jp/kokoro/"
+  },
+  {
+    "id": "tokyo-mental-health-welfare-center",
+    "name": "東京都立中部総合精神保健福祉センター",
+    "category": "mental",
+    "areas": ["Tokyo", "Chiyoda", "Minato"],
+    "description": "こころの健康や精神保健福祉に関する相談・支援情報を提供する東京都の相談機関です。",
+    "website": "https://www.fukushi.metro.tokyo.lg.jp/shougai/shisetsu/seishin/chubu",
+    "targetAge": "全年齢",
+    "sourceName": "東京都福祉局",
+    "sourceUrl": "https://www.fukushi.metro.tokyo.lg.jp/"
+  },
+  {
+    "id": "chiyoda-social-welfare-council",
+    "name": "千代田区社会福祉協議会",
+    "category": "community",
+    "areas": ["Chiyoda"],
+    "description": "地域福祉、ボランティア、生活上の困りごとに関する相談・支援を行う窓口です。",
+    "website": "https://www.chiyoda-cosw.jp/",
+    "targetAge": "全年齢",
+    "sourceName": "千代田区社会福祉協議会",
+    "sourceUrl": "https://www.chiyoda-cosw.jp/"
+  },
+  {
+    "id": "minato-social-welfare-council",
+    "name": "港区社会福祉協議会",
+    "category": "community",
+    "areas": ["Minato"],
+    "description": "地域活動、ボランティア、生活福祉に関する相談・支援を行う窓口です。",
+    "website": "https://minato-cosw.net/",
+    "targetAge": "全年齢",
+    "sourceName": "港区社会福祉協議会",
+    "sourceUrl": "https://minato-cosw.net/"
+  },
+  {
+    "id": "tokyo-vocational-training",
+    "name": "東京都立職業能力開発センター",
+    "category": "reskilling",
+    "areas": ["Tokyo", "Chiyoda", "Minato"],
+    "description": "就職に必要な知識・技能を身に付けるための職業訓練を提供しています。",
+    "website": "https://www.hataraku.metro.tokyo.lg.jp/vsdc/",
+    "targetAge": "全年齢",
+    "sourceName": "東京都産業労働局",
+    "sourceUrl": "https://www.hataraku.metro.tokyo.lg.jp/"
+  },
+  {
+    "id": "hello-work-training",
+    "name": "ハロートレーニング",
+    "category": "reskilling",
+    "areas": ["Tokyo", "Chiyoda", "Minato", "All"],
+    "description": "求職者向け職業訓練など、再就職に必要なスキルを学ぶための公的訓練情報です。",
+    "website": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/hellotraining_top.html",
+    "targetAge": "全年齢",
+    "sourceName": "厚生労働省 ハロートレーニング",
+    "sourceUrl": "https://www.mhlw.go.jp/"
+  }
+]

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, MapPin, Phone, Globe, Clock } from "lucide-react";
+import { Loader2, MapPin, Phone, Globe, Clock, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 
 const CATEGORIES = [
   { value: "employment", label: "就労支援" },
-  { value: "mental_health", label: "メンタルヘルス" },
-  { value: "labor", label: "労働相談" },
+  { value: "mental", label: "メンタルヘルス" },
   { value: "community", label: "地域活動" },
   { value: "reskilling", label: "リスキリング" },
 ];
@@ -30,74 +28,84 @@ type SupportResource = {
   website?: string | null;
   businessHours?: string | null;
   targetAge?: string | null;
+  areas: string[];
+  sourceName: string;
+  sourceUrl: string;
 };
 
-const FALLBACK_RESOURCES: SupportResource[] = [
-  {
-    id: "fallback-hello-work-tokyo",
-    name: "ハローワーク東京",
-    category: "employment",
-    description:
-      "職業相談、職業紹介、応募書類・面接に関する相談を行う国の就労支援窓口です。",
-    website: "https://www.hellowork.mhlw.go.jp/",
-    targetAge: "全年齢",
-  },
-  {
-    id: "fallback-tokyo-shigoto-center",
-    name: "東京しごとセンター",
-    category: "employment",
-    description:
-      "就職相談、セミナー、職業紹介などを提供する東京都の就労支援施設です。",
-    address: "東京都千代田区飯田橋3-10-3",
-    phone: "03-5211-1571",
-    website: "https://www.tokyoshigoto.jp/",
-    targetAge: "全年齢",
-  },
-  {
-    id: "fallback-mental-health-dial",
-    name: "こころの健康相談統一ダイヤル",
-    category: "mental_health",
-    description:
-      "こころの健康に関する相談窓口につながる全国共通の電話相談です。",
-    phone: "0570-064-556",
-    businessHours: "受付時間は地域により異なります。",
-    targetAge: "全年齢",
-  },
-];
+const isOptionalString = (value: unknown): value is string | null | undefined =>
+  value === undefined || value === null || typeof value === "string";
+
+const isSupportResource = (value: unknown): value is SupportResource => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const resource = value as Record<string, unknown>;
+  return (
+    (typeof resource.id === "string" || typeof resource.id === "number") &&
+    typeof resource.name === "string" &&
+    typeof resource.category === "string" &&
+    Array.isArray(resource.areas) &&
+    resource.areas.every(area => typeof area === "string") &&
+    typeof resource.sourceName === "string" &&
+    typeof resource.sourceUrl === "string" &&
+    isOptionalString(resource.description) &&
+    isOptionalString(resource.address) &&
+    isOptionalString(resource.phone) &&
+    isOptionalString(resource.website) &&
+    isOptionalString(resource.businessHours) &&
+    isOptionalString(resource.targetAge)
+  );
+};
 
 export default function Support() {
   const [, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("employment");
   const [selectedArea, setSelectedArea] = useState("Tokyo");
-  const [hasTimedOut, setHasTimedOut] = useState(false);
-
-  const {
-    data: resourcesData,
-    isLoading: isLoadingResources,
-    isError: hasResourceError,
-  } =
-    trpc.support.getResources.useQuery({
-      category: selectedCategory,
-      targetArea: selectedArea,
-    }, {
-      retry: false,
-    });
+  const [resources, setResources] = useState<SupportResource[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    setHasTimedOut(false);
-    if (!isLoadingResources) {
-      return;
-    }
+    const controller = new AbortController();
 
-    const timeout = window.setTimeout(() => setHasTimedOut(true), 5_000);
-    return () => window.clearTimeout(timeout);
-  }, [isLoadingResources, selectedCategory, selectedArea]);
+    const loadResources = async () => {
+      try {
+        const response = await fetch("/data/support-resources.json", {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to load support resources: ${response.status}`);
+        }
 
-  const useFallbackResources = hasResourceError || hasTimedOut;
-  const resources: SupportResource[] = useFallbackResources
-    ? FALLBACK_RESOURCES
-    : resourcesData?.resources || [];
-  const isLoading = isLoadingResources && !useFallbackResources;
+        const data: unknown = await response.json();
+        if (!Array.isArray(data) || !data.every(isSupportResource)) {
+          throw new Error("Support resources data has an invalid format");
+        }
+
+        setResources(data);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Failed to load support resources:", error);
+          setLoadError(true);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadResources();
+    return () => controller.abort();
+  }, []);
+
+  const filteredResources = resources.filter(
+    resource =>
+      resource.category === selectedCategory &&
+      resource.areas.includes(selectedArea)
+  );
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
@@ -171,7 +179,17 @@ export default function Support() {
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
               <p className="text-foreground/70">読み込み中...</p>
             </div>
-          ) : resources.length === 0 ? (
+          ) : loadError ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-foreground/70">
+                  支援窓口データを読み込めませんでした。
+                  <br />
+                  時間をおいて再度お試しください。
+                </p>
+              </CardContent>
+            </Card>
+          ) : filteredResources.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <p className="text-foreground/70">
@@ -182,7 +200,7 @@ export default function Support() {
               </CardContent>
             </Card>
           ) : (
-            resources.map((resource) => (
+            filteredResources.map((resource) => (
               <Card key={resource.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="space-y-4">
@@ -192,8 +210,7 @@ export default function Support() {
                       </h3>
                       <p className="text-sm text-accent font-medium">
                         {resource.category === "employment" && "就労支援"}
-                        {resource.category === "mental_health" && "メンタルヘルス"}
-                        {resource.category === "labor" && "労働相談"}
+                        {resource.category === "mental" && "メンタルヘルス"}
                         {resource.category === "community" && "地域活動"}
                         {resource.category === "reskilling" && "リスキリング"}
                       </p>
@@ -264,6 +281,16 @@ export default function Support() {
                         対象：{resource.targetAge}
                       </p>
                     )}
+
+                    <a
+                      href={resource.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-foreground/60 hover:text-accent hover:underline"
+                    >
+                      出典：{resource.sourceName}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
                   </div>
                 </CardContent>
               </Card>
