@@ -9,6 +9,54 @@ import { Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
+// Development mode: use dummy data instead of API calls
+const DEV_MODE = true;
+
+const SAMPLE_INTERVIEW_QUESTIONS = [
+  {
+    id: 1,
+    question: "あなたが最後の職場を退職してから現在までの間、何をしていましたか？そして、なぜこの職種に応募しようと思ったのですか？",
+    tips: "ブランク期間をポジティブに説明し、再挑戦への強い動機を示すことが重要です。スキルアップや家族のための判断など、建設的な理由を述べましょう。",
+  },
+  {
+    id: 2,
+    question: "50代での転職によって、当社にはどのようなメリットがあると思いますか？",
+    tips: "経験、信頼性、責任感、人間関係スキルなど、年代特有の強みを具体的に説明してください。単なる経験年数ではなく、それをどう活かすかを述べましょう。",
+  },
+  {
+    id: 3,
+    question: "新しいテクノロジーやツールを学ぶ必要が生じた場合、どのように対応しますか？",
+    tips: "年代による学習能力への不安を払拭することが重要です。過去の学習経験や、継続的に新しいことに取り組む姿勢を示してください。",
+  },
+  {
+    id: 4,
+    question: "チーム内で年下の同僚や上司と働く場合、どのようにコミュニケーションを取りますか？",
+    tips: "世代間のコミュニケーション能力をアピールしましょう。謙虚さ、柔軟性、そして自分の経験を押し付けない姿勢を示してください。",
+  },
+  {
+    id: 5,
+    question: "あなたの職歴の中で、最も困難だった状況とその対処方法を教えてください。",
+    tips: "具体的な例を挙げ、問題解決能力と経験の豊かさをアピールしてください。50代だからこそ対応できた問題解決の例があると良いでしょう。",
+  },
+];
+
+const generateSampleFeedback = () => ({
+  specificity: {
+    score: 4,
+    feedback: "具体的な例を挙げていることが良いです。さらに数字や期間を加えるとより説得力が増します。",
+  },
+  strengthCommunication: {
+    score: 3,
+    feedback: "経験を述べていますが、その経験がこの職種でどう活かせるかを明確に説明する必要があります。",
+  },
+  ageAdvantage: {
+    score: 4,
+    feedback: "経験豊富さをうまく伝えています。さらに、その経験から得た洞察や視点を加えると、50代の価値がより引き立ちます。",
+  },
+  improvementExample:
+    "改善例：『20年の営業経験と3つのプロジェクト管理経験から、複雑な顧客ニーズを見極める能力が身につきました。これにより、貴社では初期段階での顧客課題を正確に理解し、対応できると確信しています。』",
+});
+
 type Step = "setup" | "questions" | "practice" | "feedback";
 
 export default function Interview() {
@@ -35,6 +83,17 @@ export default function Interview() {
 
     setLoading(true);
     try {
+      // Use dummy data in DEV_MODE
+      if (DEV_MODE) {
+        setQuestions(SAMPLE_INTERVIEW_QUESTIONS);
+        setCurrentQuestionIndex(0);
+        setAnswer("");
+        setFeedback(null);
+        setStep("practice");
+        toast.success("質問を生成しました");
+        return;
+      }
+
       const result = await generateQuestionsMutation.mutateAsync({
         jobTitle,
         jobDescription: jobDescription || undefined,
@@ -65,6 +124,14 @@ export default function Interview() {
 
     setLoading(true);
     try {
+      // Use dummy data in DEV_MODE
+      if (DEV_MODE) {
+        setFeedback(generateSampleFeedback());
+        setStep("feedback");
+        toast.success("フィードバックを生成しました");
+        return;
+      }
+
       const currentQuestion = questions[currentQuestionIndex];
       const result = await generateFeedbackMutation.mutateAsync({
         question: currentQuestion.question,
