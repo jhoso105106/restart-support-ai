@@ -46,7 +46,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: DEV_MODE ? "about:blank" : "/api/trpc",
+      url: "/api/trpc",
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies
@@ -69,6 +69,43 @@ const trpcClient = trpc.createClient({
         return {};
       },
       fetch(input, init) {
+        if (DEV_MODE) {
+          // Mock TRPC response for DEV_MODE
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                result: {
+                  data: [
+                    {
+                      id: "mock-1",
+                      content: "あなたが前職を離職した理由を教えてください。",
+                    },
+                    {
+                      id: "mock-2",
+                      content: "ブランク期間をどのように過ごしていましたか？",
+                    },
+                    {
+                      id: "mock-3",
+                      content: "50代での転職を決めた動機は何ですか？",
+                    },
+                    {
+                      id: "mock-4",
+                      content: "新しい職場で心がけたいことは何ですか？",
+                    },
+                    {
+                      id: "mock-5",
+                      content: "営業職での実績について具体的に教えてください。",
+                    },
+                  ],
+                },
+              }),
+              {
+                status: 200,
+                headers: { "content-type": "application/json" },
+              }
+            )
+          );
+        }
         return globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
