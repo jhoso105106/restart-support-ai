@@ -2,7 +2,7 @@
 
 ## 1. 概要
 
-再スタート応援AI（`restart-support-ai`）は、主に50代以上の求職者の再就職・キャリア再開を支援するWebアプリケーションである。面接練習、気分の記録、相談窓口の検索、学習履歴、プロフィール、女性の健康・キャリア支援を提供する。
+再スタート応援AI（`restart-support-ai`）は、主に50代以上の求職者の再就職・キャリア再開を支援するWebアプリケーションである。ココロナビを起点に、AI面接練習、AI傾聴を使う気分チェック、東京都等の公的情報に基づく相談窓口検索、プロフィール、女性の健康・キャリア支援を提供する。
 
 フロントエンドは React SPA、アプリケーションAPIは Express + tRPC、DBは MySQL + Drizzle ORM を採用している。Cloudflare Pages では、面接質問を生成するための Pages Function と Workers AI を利用する。
 
@@ -23,12 +23,22 @@
 | `/interview` | AI面接練習 | 職種に応じた質問生成、回答、フィードバック、練習記録の保存 |
 | `/mood` | 気分・こころのサポート | 気分と状況の記録、次の行動提案 |
 | `/support` | 支援窓口 | 就労・こころ・労働・地域・リスキリング等の相談資源の検索 |
-| `/dashboard` | こころナビ | 面接・気分・学習等の記録の参照 |
+| `/dashboard` | ココロナビ | アプリの紹介と、面接練習・気分チェック・支援窓口への導線 |
 | `/self-pr` | 自己PR支援 | 自己PR作成を支援する画面 |
 | `/womens-health` | 女性の健康・キャリア支援 | 月経記録とキャリア支援 |
 | `/404` | Not Found | 未定義URLの案内 |
 
-全画面は `ErrorBoundary` で囲まれ、レンダリング例外時はエラー表示と再読み込みボタンを提供する。
+全画面は `ErrorBoundary` で囲まれ、レンダリング例外時は「再試行」で子ツリーを再生成できる。画面遷移時もエラー状態をリセットする。
+
+### 3.1 ココロナビ
+
+ココロナビは、次の情報を表示する軽量な案内画面である。
+
+- アプリの目的と利用対象
+- 面接練習、気分チェック、支援窓口案内の説明
+- 「面接練習を始める」「気分をチェック」「相談窓口を探す」の3つの導線
+
+利用状況の統計、面接履歴、気分ログ、学習活動の一覧は表示しない。
 
 ## 4. 面接練習
 
@@ -109,18 +119,51 @@ Content-Type: application/json
 
 ## 5. 気分・こころのサポート
 
-利用者は気分レベル（1〜5）、気分の説明、状況・文脈を登録できる。
+利用者は気分レベル（1〜5）、気分の一言、状況・文脈を入力できる。ブラウザは `POST /api/mood/respond` を呼び出し、Cloudflare Pages Function が Workers AI を用いて短い共感的な応答と次の行動を生成する。
 
 - 危機キーワード（例: 自殺、死、消えたい、自傷）を検知した場合、LLMを呼び出さず、相談先電話番号を含む緊急案内を返す。
-- 危機に該当しない場合、LLMが共感的な応答と次の行動を提案する。
+- 危機に該当しない場合、Workers AIが共感的な応答と次の行動を提案する。
 - 気分が高い場合は面接練習、中程度では相談窓口、低い場合は地域活動、その他は休息を推奨する。
-- すべての結果は気分ログとして保存する。
+- Pages Functionでの気分チェック結果は、静的Pages環境ではDBへ保存しない。
+
+### 5.1 Workers AI 気分応答API
+
+```text
+POST /api/mood/respond
+Content-Type: application/json
+```
+
+リクエストには `moodLevel`（1〜5）、`situation`（必須、4,000文字以下）、任意の `moodText` と `context` を含める。
+
+危機に該当しない場合は、次の形式で返す。
+
+```json
+{
+  "crisisDetected": false,
+  "aiResponse": "共感的なメッセージ",
+  "suggestedAction": "practice_interview"
+}
+```
+
+`suggestedAction` は `practice_interview`、`consult_window`、`community_activity`、`rest` のいずれかである。入力エラー、AI binding 利用不可、AI応答失敗時は、画面の送信ボタン直下にエラーを表示する。
 
 ## 6. 支援窓口・学習・プロフィール
 
 ### 6.1 支援窓口
 
-支援窓口データは `public/data/support-resources.json` の静的オープンデータから取得する。クライアントはカテゴリ、対象地域、対象年齢で相談資源を絞り込む。資源には名称、説明、住所、電話、Webサイト、受付時間、対象年齢、出典名、出典URLを持たせる。
+支援窓口データは `client/public/data/support-resources.json` の静的JSONを標準データソースとして取得する。DBと `support.getResources` APIは支援窓口画面のデータソースとして使用しない。
+
+クライアントは次の3条件で相談資源を絞り込む。
+
+| 条件 | 仕様 |
+| --- | --- |
+| カテゴリ | `employment`、`mental`、`community`、`reskilling` |
+| 地域 | 各データの `region` 配列から自動生成するプルダウン。初期値は「全国」 |
+| 年齢層 | 「全年齢」「20代以下」「30代」「40代」「50代」「60代以上」。初期値は「全年齢」 |
+
+年齢層が「50代」など「全年齢」以外の場合、選択年齢または「全年齢」を `targetAge` 配列に含む資源を表示する。JSONの `region` に地域を追加すると、コード変更なしで地域プルダウンに表示される。
+
+各資源には、ID、名称、カテゴリ、`region`、説明、住所、電話番号、Webサイト、受付時間、`targetAge`、出典名、出典URLを持たせる。画面には出典リンクを表示する。
 
 ### 6.2 学習履歴
 
@@ -158,14 +201,19 @@ Content-Type: application/json
 | `auth` | 現在の利用者取得、ログアウト |
 | `interview` | セッション保存・取得、フィードバック生成 |
 | `mood` | 気分確認、履歴取得 |
-| `support` | 支援資源検索 |
+| `support` | 支援資源検索（現在の支援窓口画面は静的JSONを使用） |
 | `learning` | 学習履歴取得・完了化 |
 | `profile` | プロフィール取得・更新 |
 | `femtech` | 月経記録、女性向けキャリア支援 |
 
 ### 8.2 Cloudflare Pages Function
 
-`functions/api/interview/questions.ts` は tRPC と独立した Pages Function であり、面接質問生成に使用する。Cloudflare Pages の `/api/interview/questions` へルーティングされる。
+以下のFunctionは tRPC と独立した Cloudflare Pages Function である。
+
+| ファイル | ルート | 用途 |
+| --- | --- | --- |
+| `functions/api/interview/questions.ts` | `POST /api/interview/questions` | 職種に合わせた面接質問の生成 |
+| `functions/api/mood/respond.ts` | `POST /api/mood/respond` | 気分チェックへのAI傾聴応答と危機時案内 |
 
 ## 9. データモデル
 
@@ -176,7 +224,7 @@ DBは MySQL を使用する。主なテーブルは次のとおり。
 | `users` | OAuth識別子、氏名、メール、ロール、ログイン日時 |
 | `interview_sessions` | 面接質問・回答・フィードバック・メモ |
 | `mood_logs` | 気分、状況、AI応答、推奨行動、危機フラグ |
-| `support_resources` | 相談窓口・支援サービス |
+| `support_resources` | 相談窓口・支援サービス用の旧DBテーブル。画面の標準データソースは静的JSON |
 | `learning_logs` | 活動履歴と完了状態 |
 | `user_profiles` | 希望職種、経験、スキル、希望地域 |
 | `menstrual_cycles` | 月経・症状・気分の記録 |
@@ -194,7 +242,7 @@ DBは MySQL を使用する。主なテーブルは次のとおり。
 | サーバー | Node.js, Express, tRPC |
 | DB | MySQL, Drizzle ORM |
 | 認証 | OAuth、Cookieセッション |
-| AI | Cloudflare Workers AI、既存の LLM 抽象化 |
+| AI | Cloudflare Workers AI（面接質問、気分チェック）、既存のLLM抽象化 |
 | ホスティング | Cloudflare Pages、Cloudflare Pages Functions |
 
 ## 11. Cloudflare Pages 配置
@@ -213,7 +261,7 @@ Cloudflare Pages プロジェクトの **Settings → Bindings** で、次の bi
 
 | 種別 | 名前 | 用途 |
 | --- | --- | --- |
-| Workers AI | `AI` | 面接質問の生成 |
+| Workers AI | `AI` | 面接質問と気分チェックの生成 |
 
 `AI` は環境変数やシークレットではない。設定変更後は再デプロイが必要である。
 
@@ -243,9 +291,20 @@ npm run test
 
 開発サーバーは `npm run dev` で起動する。
 
-## 13. 現在の運用上の注意
+## 13. デザイン方針
+
+画面全体は、公共支援サービスとして分かりやすい配色と操作性を採用する。
+
+- 濃緑のヘッダーと白文字の見出し
+- オレンジの主要操作ボタン
+- 白いカードと緑系の罫線
+- 淡いベージュ背景
+- 見出し・フォーム・カードの共通スタイル
+
+ブラウザ翻訳によるReact管理DOMの改変を避けるため、HTMLには `translate="no"` と `notranslate` メタタグを設定する。Productionでは開発用の Manus runtime を注入しない。
+
+## 14. 現在の運用上の注意
 
 - Workers AI の `AI` binding は Preview と Production でそれぞれ設定状態を確認する。
-- Workers AI 診断中は `AI_RUN_FAILED.detail` に実行時例外を返す。この詳細は原因特定後に削除し、利用者向けの一般的なエラーへ置き換える。
 - Cloudflare Function ログのCLI閲覧には Cloudflare APIトークンまたは Wrangler ログインが必要である。
 - tRPCを使う各機能は Express/Node サーバー、OAuth、MySQLへの接続を前提とする。Cloudflare Pages上で利用する範囲は、デプロイ形態に応じて別途確認する。
