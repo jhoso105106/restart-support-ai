@@ -233,12 +233,27 @@ button:active {
     background-color: var(--primary) !important;
     border-bottom: 3px solid color-mix(in oklch, var(--primary) 85%, black) !important;
     box-shadow: none;
+    position: relative;
+    z-index: 50;
   }
 
   .min-h-screen > header h1,
   .min-h-screen > nav h1,
   .min-h-screen > nav > div > div:first-child {
-    color: var(--primary-foreground);
+    color: var(--primary-foreground) !important;
+  }
+
+  .min-h-screen > header [data-slot="button"],
+  .min-h-screen > nav [data-slot="button"] {
+    position: relative;
+    z-index: 60;
+    background-color: var(--accent);
+    color: var(--accent-foreground) !important;
+  }
+
+  .min-h-screen > header [data-slot="button"]:hover,
+  .min-h-screen > nav [data-slot="button"]:hover {
+    background-color: color-mix(in oklch, var(--accent) 86%, black);
   }
 
   [data-slot="card"] {
