@@ -1,11 +1,9 @@
-import { useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, MapPin, Phone, Globe, Clock } from "lucide-react";
 import { useLocation } from "wouter";
-import { toast } from "sonner";
 
 const CATEGORIES = [
   { value: "employment", label: "就労支援" },
@@ -22,20 +20,84 @@ const AREAS = [
   { value: "All", label: "全国" },
 ];
 
+type SupportResource = {
+  id: string | number;
+  name: string;
+  category: string;
+  description?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  businessHours?: string | null;
+  targetAge?: string | null;
+};
+
+const FALLBACK_RESOURCES: SupportResource[] = [
+  {
+    id: "fallback-hello-work-tokyo",
+    name: "ハローワーク東京",
+    category: "employment",
+    description:
+      "職業相談、職業紹介、応募書類・面接に関する相談を行う国の就労支援窓口です。",
+    website: "https://www.hellowork.mhlw.go.jp/",
+    targetAge: "全年齢",
+  },
+  {
+    id: "fallback-tokyo-shigoto-center",
+    name: "東京しごとセンター",
+    category: "employment",
+    description:
+      "就職相談、セミナー、職業紹介などを提供する東京都の就労支援施設です。",
+    address: "東京都千代田区飯田橋3-10-3",
+    phone: "03-5211-1571",
+    website: "https://www.tokyoshigoto.jp/",
+    targetAge: "全年齢",
+  },
+  {
+    id: "fallback-mental-health-dial",
+    name: "こころの健康相談統一ダイヤル",
+    category: "mental_health",
+    description:
+      "こころの健康に関する相談窓口につながる全国共通の電話相談です。",
+    phone: "0570-064-556",
+    businessHours: "受付時間は地域により異なります。",
+    targetAge: "全年齢",
+  },
+];
+
 export default function Support() {
-  const { user } = useAuth();
   const [, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("employment");
   const [selectedArea, setSelectedArea] = useState("Tokyo");
-  const [loading, setLoading] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
 
-  const { data: resourcesData, isLoading: isLoadingResources } =
+  const {
+    data: resourcesData,
+    isLoading: isLoadingResources,
+    isError: hasResourceError,
+  } =
     trpc.support.getResources.useQuery({
       category: selectedCategory,
       targetArea: selectedArea,
+    }, {
+      retry: false,
     });
 
-  const resources = resourcesData?.resources || [];
+  useEffect(() => {
+    setHasTimedOut(false);
+    if (!isLoadingResources) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setHasTimedOut(true), 5_000);
+    return () => window.clearTimeout(timeout);
+  }, [isLoadingResources, selectedCategory, selectedArea]);
+
+  const useFallbackResources = hasResourceError || hasTimedOut;
+  const resources: SupportResource[] = useFallbackResources
+    ? FALLBACK_RESOURCES
+    : resourcesData?.resources || [];
+  const isLoading = isLoadingResources && !useFallbackResources;
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
@@ -104,7 +166,7 @@ export default function Support() {
 
         {/* Resources List */}
         <div className="space-y-4">
-          {isLoadingResources ? (
+          {isLoading ? (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
               <p className="text-foreground/70">読み込み中...</p>
@@ -120,7 +182,7 @@ export default function Support() {
               </CardContent>
             </Card>
           ) : (
-            resources.map((resource: any) => (
+            resources.map((resource) => (
               <Card key={resource.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="space-y-4">
