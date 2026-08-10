@@ -43,40 +43,39 @@
 }
 
 :root {
-  /* Sacred geometry palette: warm cream background with dark navy and gold accents */
-  --primary: oklch(0.22 0.08 280); /* Dark Navy */
-  --primary-foreground: oklch(0.98 0.01 80); /* Warm Cream */
-  --sidebar-primary: oklch(0.22 0.08 280);
-  --sidebar-primary-foreground: oklch(0.98 0.01 80);
-  --chart-1: oklch(0.65 0.12 50); /* Gold */
-  --chart-2: oklch(0.70 0.15 55); /* Light Gold */
-  --chart-3: oklch(0.22 0.08 280); /* Dark Navy */
-  --chart-4: oklch(0.45 0.08 280); /* Medium Navy */
-  --chart-5: oklch(0.60 0.08 280); /* Light Navy */
-  --radius: 0.65rem;
-  --background: oklch(0.98 0.01 80); /* Warm Cream */
-  --foreground: oklch(0.22 0.08 280); /* Dark Navy */
-  --card: oklch(0.99 0.005 80); /* Off-white with warm tone */
-  --card-foreground: oklch(0.22 0.08 280); /* Dark Navy */
-  --popover: oklch(0.99 0.005 80);
-  --popover-foreground: oklch(0.22 0.08 280);
-  --secondary: oklch(0.65 0.12 50); /* Gold */
-  --secondary-foreground: oklch(0.22 0.08 280); /* Dark Navy */
-  --muted: oklch(0.92 0.01 80); /* Light Cream */
-  --muted-foreground: oklch(0.45 0.08 280); /* Medium Navy */
-  --accent: oklch(0.65 0.12 50); /* Gold */
-  --accent-foreground: oklch(0.22 0.08 280); /* Dark Navy */
+  --primary: oklch(0.31 0.07 165);
+  --primary-foreground: oklch(0.99 0.005 100);
+  --sidebar-primary: oklch(0.31 0.07 165);
+  --sidebar-primary-foreground: oklch(0.99 0.005 100);
+  --chart-1: oklch(0.61 0.18 42);
+  --chart-2: oklch(0.72 0.17 55);
+  --chart-3: oklch(0.31 0.07 165);
+  --chart-4: oklch(0.43 0.09 165);
+  --chart-5: oklch(0.55 0.08 165);
+  --radius: 0.45rem;
+  --background: oklch(0.965 0.012 92);
+  --foreground: oklch(0.27 0.055 165);
+  --card: oklch(0.995 0.002 100);
+  --card-foreground: oklch(0.27 0.055 165);
+  --popover: oklch(0.995 0.002 100);
+  --popover-foreground: oklch(0.27 0.055 165);
+  --secondary: oklch(0.61 0.18 42);
+  --secondary-foreground: oklch(0.99 0.005 100);
+  --muted: oklch(0.94 0.012 92);
+  --muted-foreground: oklch(0.43 0.045 165);
+  --accent: oklch(0.61 0.18 42);
+  --accent-foreground: oklch(0.99 0.005 100);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.90 0.01 80); /* Light Cream Border */
-  --input: oklch(0.99 0.005 80);
-  --ring: oklch(0.65 0.12 50); /* Gold Ring */
-  --sidebar: oklch(0.98 0.01 80); /* Warm Cream */
-  --sidebar-foreground: oklch(0.22 0.08 280); /* Dark Navy */
-  --sidebar-accent: oklch(0.65 0.12 50); /* Gold */
-  --sidebar-accent-foreground: oklch(0.22 0.08 280); /* Dark Navy */
-  --sidebar-border: oklch(0.90 0.01 80);
-  --sidebar-ring: oklch(0.65 0.12 50);
+  --border: oklch(0.79 0.022 165);
+  --input: oklch(1 0 0);
+  --ring: oklch(0.61 0.18 42);
+  --sidebar: oklch(0.965 0.012 92);
+  --sidebar-foreground: oklch(0.27 0.055 165);
+  --sidebar-accent: oklch(0.61 0.18 42);
+  --sidebar-accent-foreground: oklch(0.99 0.005 100);
+  --sidebar-border: oklch(0.79 0.022 165);
+  --sidebar-ring: oklch(0.61 0.18 42);
 }
 
 .dark {
@@ -120,6 +119,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Noto Sans JP", "Yu Gothic UI", sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -178,33 +178,18 @@
 }
 
 
-/* Sacred Geometry Background Pattern */
 .sacred-geometry-bg {
   background-color: var(--background);
-  background-image: 
-    radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 40% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
   position: relative;
 }
 
 .sacred-geometry-bg::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><style>.geo-line { stroke: %23D4AF37; stroke-width: 0.8; fill: none; opacity: 0.12; }</style></defs><g class="geo-line"><circle cx="500" cy="500" r="300"/><circle cx="500" cy="500" r="200"/><circle cx="500" cy="500" r="100"/><circle cx="350" cy="350" r="80"/><circle cx="650" cy="350" r="80"/><circle cx="350" cy="650" r="80"/><circle cx="650" cy="650" r="80"/><path d="M 200 500 Q 500 200 800 500 Q 500 800 200 500"/></g></svg>');
-  background-size: 600px 600px;
-  background-repeat: repeat;
-  background-attachment: fixed;
-  pointer-events: none;
+  content: none;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Segoe UI', Trebuchet MS, sans-serif;
+  font-family: "Noto Sans JP", "Yu Gothic UI", sans-serif;
   font-weight: 700;
   color: var(--foreground);
   letter-spacing: -0.02em;
@@ -225,7 +210,6 @@ h3 {
   line-height: 1.3;
 }
 
-/* Accent text in gold */
 .accent-text {
   color: var(--accent);
   font-weight: 500;
@@ -241,4 +225,40 @@ h3 {
 
 button:active {
   transform: scale(0.97);
+}
+
+@layer components {
+  .min-h-screen > header,
+  .min-h-screen > nav {
+    background-color: var(--primary) !important;
+    border-bottom: 3px solid color-mix(in oklch, var(--primary) 85%, black) !important;
+    box-shadow: none;
+  }
+
+  .min-h-screen > header h1,
+  .min-h-screen > nav h1,
+  .min-h-screen > nav > div > div:first-child {
+    color: var(--primary-foreground);
+  }
+
+  [data-slot="card"] {
+    border-color: var(--border);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--primary) 10%, transparent);
+  }
+
+  [data-slot="button"][class*="bg-primary"] {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  [data-slot="button"][class*="bg-primary"]:hover {
+    background-color: color-mix(in oklch, var(--accent) 86%, black);
+  }
+
+  input,
+  textarea,
+  select {
+    border-color: var(--border);
+    background-color: var(--card);
+  }
 }
