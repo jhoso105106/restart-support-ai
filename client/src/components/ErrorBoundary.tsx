@@ -4,21 +4,44 @@ import { Component, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
+  resetKey?: string;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  retryKey: number;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, retryKey: 0 };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, retryKey: 0 };
+  }
+
+  componentDidUpdate(previousProps: Props) {
+    if (
+      this.state.hasError &&
+      previousProps.resetKey !== this.props.resetKey
+    ) {
+      this.setState(state => ({
+        hasError: false,
+        error: null,
+        retryKey: state.retryKey + 1,
+      }));
+    }
+  }
+
+  handleRetry = () => {
+    this.setState(state => ({
+      hasError: false,
+      error: null,
+      retryKey: state.retryKey + 1,
+    }));
   }
 
   render() {
@@ -40,7 +63,7 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <button
-              onClick={() => window.location.reload()}
+              onClick={this.handleRetry}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-lg",
                 "bg-primary text-primary-foreground",
@@ -48,14 +71,14 @@ class ErrorBoundary extends Component<Props, State> {
               )}
             >
               <RotateCcw size={16} />
-              Reload Page
+              再試行
             </button>
           </div>
         </div>
       );
     }
 
-    return this.props.children;
+    return <div key={this.state.retryKey}>{this.props.children}</div>;
   }
 }
 

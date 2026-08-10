@@ -188,7 +188,7 @@ export default function Interview() {
         </div>
       </header>
 
-      <div className="container py-12">
+      <div className="container py-12" key={step}>
         {step === "setup" && (
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
