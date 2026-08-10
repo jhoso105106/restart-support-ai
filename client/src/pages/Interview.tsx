@@ -68,10 +68,19 @@ export default function Interview() {
         }),
       });
 
-      const result = (await response.json()) as {
-        questions?: InterviewQuestion[];
-        error?: string;
-      };
+      const responseText = await response.text();
+      let result: { questions?: InterviewQuestion[]; error?: string };
+      try {
+        result = JSON.parse(responseText) as {
+          questions?: InterviewQuestion[];
+          error?: string;
+        };
+      } catch {
+        throw new Error(
+          `質問の生成に失敗しました（HTTP ${response.status}）`
+        );
+      }
+
       if (!response.ok || !result.questions) {
         throw new Error(result.error || "質問の生成に失敗しました");
       }

@@ -75,16 +75,29 @@ export const onRequestPost = async ({
     return jsonResponse({ error: "入力内容を確認してください。" }, 400);
   }
 
-  const result = await env.AI.run(MODEL, {
-    messages: [
+  if (!env.AI || typeof env.AI.run !== "function") {
+    console.error("Workers AI binding AI is unavailable");
+    return jsonResponse(
       {
-        role: "system",
-        content:
-          "あなたは50代以上の求職者を支援する日本のキャリアコーチです。応募職種に合わせた、実践的で偏見のない面接質問を作成します。出力は指定されたJSON形式だけにしてください。",
+        error: "Workers AI binding AI is unavailable.",
+        code: "AI_BINDING_UNAVAILABLE",
       },
-      {
-        role: "user",
-        content: `以下の応募情報を基に、面接練習用の質問を5件作成してください。
+      500
+    );
+  }
+
+  let result: { response: string };
+  try {
+    result = await env.AI.run(MODEL, {
+      messages: [
+        {
+          role: "system",
+          content:
+            "あなたは50代以上の求職者を支援する日本のキャリアコーチです。応募職種に合わせた、実践的で偏見のない面接質問を作成します。出力は指定されたJSON形式だけにしてください。",
+        },
+        {
+          role: "user",
+          content: `以下の応募情報を基に、面接練習用の質問を5件作成してください。
 
 応募職種:
 ${jobTitle.trim()}
@@ -96,11 +109,23 @@ ${typeof jobDescription === "string" && jobDescription.trim() ? jobDescription.t
 
 次のJSONオブジェクトだけを返してください:
 {"questions":[{"question":"質問文","tips":"回答のポイント"}]}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 1_500,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error("Workers AI run failed:", error);
+    return jsonResponse(
+      {
+        error: "Workers AI request failed.",
+        code: "AI_RUN_FAILED",
+        detail,
       },
-    ],
-    response_format: { type: "json_object" },
-    max_tokens: 1_500,
-  });
+      502
+    );
+  }
 
   let responseBody: unknown;
   try {
