@@ -1,0 +1,60 @@
+name = "restart-support-ai"
+type = "nodejs"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+compatibility_date = "2024-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Workers settings
+worker_namespaces = []
+
+# Bindings for environment variables
+[env.production]
+name = "restart-support-ai-prod"
+routes = [
+  { pattern = "api.yourdomain.com/api/*", zone_name = "yourdomain.com" }
+]
+
+# Environment variables for production
+vars = { NODE_ENV = "production", VITE_APP_ID = "your-app-id" }
+
+[env.production.secrets]
+# These should be set via `wrangler secret put`
+# DATABASE_URL
+# OAUTH_SERVER_URL
+# OWNER_OPEN_ID
+# JWT_SECRET
+# AZURE_OPENAI_API_KEY
+# AZURE_OPENAI_ENDPOINT
+# AZURE_OPENAI_DEPLOYMENT
+
+[env.staging]
+name = "restart-support-ai-staging"
+routes = [
+  { pattern = "staging-api.yourdomain.com/api/*", zone_name = "yourdomain.com" }
+]
+
+vars = { NODE_ENV = "staging", VITE_APP_ID = "your-app-id-staging" }
+
+[env.staging.secrets]
+# DATABASE_URL
+# OAUTH_SERVER_URL
+# OWNER_OPEN_ID
+# JWT_SECRET
+# AZURE_OPENAI_API_KEY
+# AZURE_OPENAI_ENDPOINT
+# AZURE_OPENAI_DEPLOYMENT
+
+[build]
+command = "npm install --legacy-peer-deps && npm run build"
+cwd = "./"
+watch_paths = ["client/**/*.tsx", "client/**/*.ts", "server/**/*.ts"]
+
+[env.production.build]
+command = "npm install --legacy-peer-deps && npm run build"
+cwd = "./"
+
+[[env.production.triggers.crons]]
+cron = "0 0 * * *"

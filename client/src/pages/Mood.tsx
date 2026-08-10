@@ -1,0 +1,343 @@
+import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, AlertTriangle, Heart } from "lucide-react";
+import { useLocation } from "wouter";
+import { toast } from "sonner";
+
+type Step = "mood-select" | "situation" | "response" | "crisis";
+
+const MOOD_OPTIONS = [
+  { level: 5, label: "とても良い", emoji: "😊", color: "bg-green-100" },
+  { level: 4, label: "良い", emoji: "🙂", color: "bg-blue-100" },
+  { level: 3, label: "普通", emoji: "😐", color: "bg-yellow-100" },
+  { level: 2, label: "悪い", emoji: "😔", color: "bg-orange-100" },
+  { level: 1, label: "とても悪い", emoji: "😢", color: "bg-red-100" },
+];
+
+const CONTEXT_OPTIONS = [
+  "before_interview",
+  "after_rejection",
+  "daily_check",
+  "other",
+];
+
+const CONTEXT_LABELS: Record<string, string> = {
+  before_interview: "面接前",
+  after_rejection: "不採用後",
+  daily_check: "日々のチェック",
+  other: "その他",
+};
+
+export default function Mood() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
+  const [step, setStep] = useState<Step>("mood-select");
+  const [moodLevel, setMoodLevel] = useState(3);
+  const [moodText, setMoodText] = useState("");
+  const [context, setContext] = useState("daily_check");
+  const [situation, setSituation] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [suggestedAction, setSuggestedAction] = useState("");
+  const [crisisDetected, setCrisisDetected] = useState(false);
+  const [crisisResources, setCrisisResources] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const checkMoodMutation = trpc.mood.checkMood.useMutation();
+
+  const handleCheckMood = async () => {
+    if (!situation.trim()) {
+      toast.error("状況を入力してください");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await checkMoodMutation.mutateAsync({
+        moodLevel,
+        moodText: moodText || undefined,
+        context,
+        situation,
+      });
+
+      if (result.crisisDetected && "resources" in result) {
+        setCrisisDetected(true);
+        setCrisisResources(result.resources || []);
+        setStep("crisis");
+      } else if ("aiResponse" in result && result.success) {
+        setAiResponse(result.aiResponse || "");
+        setSuggestedAction(result.suggestedAction || "rest");
+        setStep("response");
+        toast.success("気分チェックが完了しました");
+      } else {
+        toast.error((result as any).error || "処理に失敗しました");
+      }
+    } catch (error) {
+      toast.error("エラーが発生しました");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActionClick = () => {
+    switch (suggestedAction) {
+      case "practice_interview":
+        navigate("/interview");
+        break;
+      case "consult_window":
+        navigate("/support");
+        break;
+      case "community_activity":
+        navigate("/support?category=community");
+        break;
+      default:
+        navigate("/dashboard");
+    }
+  };
+
+  if (crisisDetected) {
+    return (
+      <div className="min-h-screen bg-background sacred-geometry-bg">
+        <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+          <div className="container flex items-center justify-between h-16">
+            <h1 className="text-2xl font-bold text-primary">気分チェック</h1>
+          </div>
+        </header>
+
+        <div className="container py-12">
+          <Card className="max-w-2xl mx-auto border-red-200 bg-red-50">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+                <CardTitle className="text-red-900">
+                  あなたの安全が最優先です
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-red-800">
+                今、あなたは苦しい状態にあるようです。一人で抱え込まないでください。
+                以下の窓口に、すぐにご相談ください。
+              </p>
+
+              <div className="space-y-3">
+                {crisisResources.map((resource, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white p-4 rounded-lg border border-red-200"
+                  >
+                    <h4 className="font-semibold text-foreground mb-2">
+                      {resource.name}
+                    </h4>
+                    <p className="text-sm text-foreground/70 mb-2">
+                      {resource.hours}
+                    </p>
+                    <a
+                      href={`tel:${resource.phone}`}
+                      className="text-red-600 font-semibold hover:underline"
+                    >
+                      📞 {resource.phone}
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-sm text-blue-900">
+                  💙 あなたの命は大切です。
+                  <br />
+                  今この瞬間、専門家に話を聞いてもらうことで、
+                  <br />
+                  状況は必ず変わります。
+                </p>
+              </div>
+
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => navigate("/")}
+              >
+                ホームに戻る
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background sacred-geometry-bg">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container flex items-center justify-between h-16">
+          <h1 className="text-2xl font-bold text-primary">気分チェック</h1>
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+          >
+            ホームに戻る
+          </Button>
+        </div>
+      </header>
+
+      <div className="container py-12">
+        {step === "mood-select" && (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>今のあなたの気分は？</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-5 gap-3">
+                {MOOD_OPTIONS.map((option) => (
+                  <button
+                    key={option.level}
+                    onClick={() => {
+                      setMoodLevel(option.level);
+                      setStep("situation");
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      moodLevel === option.level
+                        ? "border-accent bg-accent/10"
+                        : "border-border hover:border-accent/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{option.emoji}</div>
+                    <div className="text-xs font-medium text-foreground">
+                      {option.label}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "situation" && (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>状況を教えてください</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  どのような時ですか？
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {CONTEXT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setContext(opt)}
+                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                        context === opt
+                          ? "border-accent bg-accent/10"
+                          : "border-border hover:border-accent/50"
+                      }`}
+                    >
+                      {CONTEXT_LABELS[opt]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  今の気持ちを教えてください *
+                </label>
+                <Textarea
+                  placeholder="例：何社も落ちて、自分には価値がない気がする..."
+                  value={situation}
+                  onChange={(e) => setSituation(e.target.value)}
+                  rows={5}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  気分の一言（任意）
+                </label>
+                <input
+                  type="text"
+                  placeholder="例：不安、落ち込み、疲れた..."
+                  value={moodText}
+                  onChange={(e) => setMoodText(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                />
+              </div>
+
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={handleCheckMood}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    処理中...
+                  </>
+                ) : (
+                  <>
+                    <Heart className="w-4 h-4 mr-2" />
+                    AI傾聴を受ける
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "response" && aiResponse && (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>AIからのメッセージ</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-card/50 p-6 rounded-lg border border-border whitespace-pre-wrap">
+                {aiResponse}
+              </div>
+
+              <div className="bg-accent/10 border border-accent/30 p-4 rounded-lg">
+                <p className="text-sm font-semibold text-foreground mb-2">
+                  💡 次のステップ
+                </p>
+                <p className="text-sm text-foreground/80">
+                  {suggestedAction === "practice_interview" &&
+                    "面接練習を通じて、自信をつけるお手伝いをします。"}
+                  {suggestedAction === "consult_window" &&
+                    "専門家の相談窓口をご紹介します。"}
+                  {suggestedAction === "community_activity" &&
+                    "地域の活動や居場所を探してみませんか？"}
+                  {suggestedAction === "rest" &&
+                    "今は無理をせず、ゆっくり休むことも大切です。"}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  onClick={() => {
+                    setStep("mood-select");
+                    setSituation("");
+                    setMoodText("");
+                  }}
+                >
+                  もう一度チェック
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleActionClick}
+                >
+                  次のステップへ
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
