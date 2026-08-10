@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, AlertTriangle, Heart } from "lucide-react";
 import { useLocation } from "wouter";
-import { toast } from "sonner";
 
 type Step = "mood-select" | "situation" | "response" | "crisis";
 
@@ -33,7 +30,6 @@ const CONTEXT_LABELS: Record<string, string> = {
 };
 
 export default function Mood() {
-  const { user } = useAuth();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("mood-select");
   const [moodLevel, setMoodLevel] = useState(3);
@@ -45,38 +41,60 @@ export default function Mood() {
   const [crisisDetected, setCrisisDetected] = useState(false);
   const [crisisResources, setCrisisResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const checkMoodMutation = trpc.mood.checkMood.useMutation();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleCheckMood = async () => {
     if (!situation.trim()) {
-      toast.error("状況を入力してください");
+      setErrorMessage("今の気持ちを入力してください。");
       return;
     }
 
+    setErrorMessage("");
     setLoading(true);
     try {
-      const result = await checkMoodMutation.mutateAsync({
-        moodLevel,
-        moodText: moodText || undefined,
-        context,
-        situation,
+      const response = await fetch("/api/mood/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          moodLevel,
+          moodText: moodText || undefined,
+          context,
+          situation,
+        }),
       });
+      const responseText = await response.text();
+      let result: {
+        crisisDetected?: boolean;
+        resources?: Array<{ name: string; phone: string; hours: string }>;
+        aiResponse?: string;
+        suggestedAction?: string;
+        error?: string;
+      };
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        throw new Error(`AI傾聴に失敗しました（HTTP ${response.status}）`);
+      }
 
-      if (result.crisisDetected && "resources" in result) {
+      if (!response.ok) {
+        throw new Error(result.error || "AI傾聴に失敗しました。");
+      }
+
+      if (result.crisisDetected && result.resources) {
         setCrisisDetected(true);
         setCrisisResources(result.resources || []);
         setStep("crisis");
-      } else if ("aiResponse" in result && result.success) {
+      } else if (result.aiResponse && result.suggestedAction) {
         setAiResponse(result.aiResponse || "");
         setSuggestedAction(result.suggestedAction || "rest");
         setStep("response");
-        toast.success("気分チェックが完了しました");
       } else {
-        toast.error((result as any).error || "処理に失敗しました");
+        throw new Error(result.error || "AI傾聴に失敗しました。");
       }
     } catch (error) {
-      toast.error("エラーが発生しました");
+      setErrorMessage(
+        error instanceof Error ? error.message : "AI傾聴に失敗しました。"
+      );
     } finally {
       setLoading(false);
     }
@@ -285,6 +303,11 @@ export default function Mood() {
                   </>
                 )}
               </Button>
+              {errorMessage && (
+                <p className="text-sm text-destructive" role="alert">
+                  {errorMessage}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
