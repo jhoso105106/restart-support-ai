@@ -11,12 +11,7 @@ const CATEGORIES = [
   { value: "reskilling", label: "リスキリング" },
 ];
 
-const AREAS = [
-  { value: "Tokyo", label: "東京都全域" },
-  { value: "Chiyoda", label: "千代田区" },
-  { value: "Minato", label: "港区" },
-  { value: "All", label: "全国" },
-];
+const AGE_GROUPS = ["全年齢", "20代以下", "30代", "40代", "50代", "60代以上"];
 
 type SupportResource = {
   id: string | number;
@@ -27,8 +22,8 @@ type SupportResource = {
   phone?: string | null;
   website?: string | null;
   businessHours?: string | null;
-  targetAge?: string | null;
-  areas: string[];
+  targetAge: string[];
+  region: string[];
   sourceName: string;
   sourceUrl: string;
 };
@@ -46,8 +41,8 @@ const isSupportResource = (value: unknown): value is SupportResource => {
     (typeof resource.id === "string" || typeof resource.id === "number") &&
     typeof resource.name === "string" &&
     typeof resource.category === "string" &&
-    Array.isArray(resource.areas) &&
-    resource.areas.every(area => typeof area === "string") &&
+    Array.isArray(resource.region) &&
+    resource.region.every(region => typeof region === "string") &&
     typeof resource.sourceName === "string" &&
     typeof resource.sourceUrl === "string" &&
     isOptionalString(resource.description) &&
@@ -55,14 +50,16 @@ const isSupportResource = (value: unknown): value is SupportResource => {
     isOptionalString(resource.phone) &&
     isOptionalString(resource.website) &&
     isOptionalString(resource.businessHours) &&
-    isOptionalString(resource.targetAge)
+    Array.isArray(resource.targetAge) &&
+    resource.targetAge.every(age => typeof age === "string")
   );
 };
 
 export default function Support() {
   const [, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("employment");
-  const [selectedArea, setSelectedArea] = useState("Tokyo");
+  const [selectedRegion, setSelectedRegion] = useState("全国");
+  const [selectedAge, setSelectedAge] = useState("全年齢");
   const [resources, setResources] = useState<SupportResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -104,8 +101,18 @@ export default function Support() {
   const filteredResources = resources.filter(
     resource =>
       resource.category === selectedCategory &&
-      resource.areas.includes(selectedArea)
+      resource.region.includes(selectedRegion) &&
+      (selectedAge === "全年齢" ||
+        resource.targetAge.includes(selectedAge) ||
+        resource.targetAge.includes("全年齢"))
   );
+  const regions = [
+    "全国",
+    ...Array.from(
+      new Set(resources.flatMap(resource => resource.region))
+    )
+      .filter(region => region !== "全国"),
+  ];
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
@@ -150,24 +157,45 @@ export default function Support() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
+              <label
+                htmlFor="support-resource-region"
+                className="block text-sm font-medium text-foreground mb-3"
+              >
                 対象地域
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {AREAS.map((area) => (
-                  <button
-                    key={area.value}
-                    onClick={() => setSelectedArea(area.value)}
-                    className={`p-3 rounded-lg border-2 text-sm transition-all ${
-                      selectedArea === area.value
-                        ? "border-accent bg-accent/10"
-                        : "border-border hover:border-accent/50"
-                    }`}
-                  >
-                    {area.label}
-                  </button>
+              <select
+                id="support-resource-region"
+                value={selectedRegion}
+                onChange={event => setSelectedRegion(event.target.value)}
+                className="h-11 w-full rounded-lg border-2 border-border bg-background px-3 text-sm outline-none focus:border-accent"
+              >
+                {regions.map(region => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
                 ))}
-              </div>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="support-resource-age"
+                className="block text-sm font-medium text-foreground mb-3"
+              >
+                年齢層
+              </label>
+              <select
+                id="support-resource-age"
+                value={selectedAge}
+                onChange={event => setSelectedAge(event.target.value)}
+                className="h-11 w-full rounded-lg border-2 border-border bg-background px-3 text-sm outline-none focus:border-accent"
+              >
+                {AGE_GROUPS.map(age => (
+                  <option key={age} value={age}>
+                    {age}
+                  </option>
+                ))}
+              </select>
             </div>
           </CardContent>
         </Card>
@@ -278,7 +306,7 @@ export default function Support() {
 
                     {resource.targetAge && (
                       <p className="text-xs text-foreground/60">
-                        対象：{resource.targetAge}
+                        対象：{resource.targetAge.join("・")}
                       </p>
                     )}
 
