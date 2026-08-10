@@ -43,7 +43,7 @@ export default function Home() {
                 size="sm"
                 onClick={() => navigate("/dashboard")}
               >
-                ダッシュボード
+                こころナビ
               </Button>
             </div>
           </div>
@@ -65,7 +65,7 @@ export default function Home() {
               className="w-full"
               onClick={() => navigate("/dashboard")}
             >
-              ダッシュボードを見る
+              こころナビを見る
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
               </CardContent>

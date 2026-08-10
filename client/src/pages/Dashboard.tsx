@@ -38,7 +38,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background sacred-geometry-bg">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">ダッシュボード</h1>
+          <h1 className="text-2xl font-bold text-primary">こころナビ</h1>
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
