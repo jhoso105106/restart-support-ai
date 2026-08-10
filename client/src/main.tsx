@@ -1,4 +1,4 @@
-import { trpc } from "@/lib/trpc";
+﻿import { trpc } from "@/lib/trpc";
 import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -8,6 +8,8 @@ import App from "./App";
 import { startLogin } from "./const";
 import "./index.css";
 
+// Development mode: skip API calls and use dummy data
+const DEV_MODE = true;
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
@@ -24,7 +26,9 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    redirectToLoginIfUnauthorized(error);
+    if (!DEV_MODE) {
+      redirectToLoginIfUnauthorized(error);
+    }
     console.error("[API Query Error]", error);
   }
 });
@@ -32,7 +36,9 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    redirectToLoginIfUnauthorized(error);
+    if (!DEV_MODE) {
+      redirectToLoginIfUnauthorized(error);
+    }
     console.error("[API Mutation Error]", error);
   }
 });
@@ -40,7 +46,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: DEV_MODE ? "about:blank" : "/api/trpc",
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies
@@ -79,3 +85,4 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </trpc.Provider>
 );
+
