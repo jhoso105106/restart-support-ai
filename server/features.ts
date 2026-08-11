@@ -835,6 +835,28 @@ export const femtechRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (DEV_MODE) {
+        const sampleAdvice: Record<typeof input.category, string> = {
+          child_rearing:
+            "育児と仕事を両立するには、まず勤務できる曜日や時間、急な対応が必要になる条件を整理しましょう。そのうえで、応募先には希望だけでなく、家族や支援サービスとの協力体制、業務を安定して続けるための工夫も具体的に伝えると安心感につながります。",
+          career_resume:
+            "離職期間を隠す必要はありません。その期間に担ったことや身についた計画力、調整力、忍耐力を仕事に結びつけて説明しましょう。応募職種に必要な知識を一つずつ学び直し、小さな実績を作ることも自信につながります。",
+          work_life_balance:
+            "無理なく続けられる働き方の条件を、勤務時間、通勤、家庭での役割に分けて整理しましょう。すべてを一人で抱えず、家族や職場と早めに相談し、繁忙時の対応方法まで考えておくと長期的に働きやすくなります。",
+          interview_for_mothers:
+            "面接では、家庭の事情を必要以上に詳しく説明するより、勤務に影響する条件と対応策を簡潔に伝えることが大切です。育児で培った優先順位付け、予定変更への対応力、相手に合わせたコミュニケーションを、具体的な経験とともに仕事の強みとして伝えましょう。",
+        };
+
+        const contextNote = input.context
+          ? `\n\n今回の状況（${input.context}）については、無理なく継続できる条件を先に整理し、応募先へ相談できる点と家庭・支援機関で備える点を分けて考えてみましょう。`
+          : "";
+
+        return {
+          success: true,
+          advice: `${sampleAdvice[input.category]}${contextNote}`,
+        };
+      }
+
       const categoryPrompts: Record<string, string> = {
         child_rearing: `You are a career coach specializing in supporting working mothers and parents in their 50s.
 Provide compassionate, practical advice on balancing childcare responsibilities with career ambitions.

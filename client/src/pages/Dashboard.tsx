@@ -25,7 +25,7 @@ export default function Dashboard() {
                   ココロナビについて
                 </h2>
                 <p className="text-sm leading-7 text-foreground/80">
-                  ココロナビは、50代からの再就職や暮らしの不安に寄り添う総合サポートアプリです。
+                  ココロナビは、女性の再就職や暮らしの不安に寄り添う総合サポートアプリです。
                   面接の準備だけでなく、気持ちの整理、学び直し、信頼できる公的支援窓口探しまで、
                   次の一歩を自分のペースで考えられるよう支援します。
                 </p>
@@ -56,7 +56,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Button className="h-auto py-6" onClick={() => navigate("/interview")}>
               面接練習を始める
             </Button>
@@ -73,6 +73,17 @@ export default function Dashboard() {
               variant="outline"
             >
               相談窓口を探す
+            </Button>
+            <Button
+              className="h-auto py-6"
+              onClick={() =>
+                navigate(
+                  "/womens-health?category=interview_for_mothers"
+                )
+              }
+              variant="outline"
+            >
+              母親向け面接対策
             </Button>
           </div>
         </div>

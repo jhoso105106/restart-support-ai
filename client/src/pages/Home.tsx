@@ -128,6 +128,18 @@ export default function Home() {
                   女性サポートを利用する
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
+                  onClick={() =>
+                    navigate(
+                      "/womens-health?category=interview_for_mothers"
+                    )
+                  }
+                >
+                  母親向けの面接質問へ
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </CardContent>
             </Card>
           </div>

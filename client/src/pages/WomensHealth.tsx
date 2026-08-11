@@ -41,7 +41,12 @@ const CAREER_CATEGORIES = [
 export default function WomensHealth() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"menstrual" | "career">("menstrual");
+  const isMothersInterview =
+    new URLSearchParams(window.location.search).get("category") ===
+    "interview_for_mothers";
+  const [activeTab, setActiveTab] = useState<"menstrual" | "career">(
+    isMothersInterview ? "career" : "menstrual"
+  );
 
   // Menstrual cycle state
   const [startDate, setStartDate] = useState("");
@@ -52,21 +57,27 @@ export default function WomensHealth() {
   const [notes, setNotes] = useState("");
 
   // Career advice state
-  const [selectedCategory, setSelectedCategory] = useState("child_rearing");
+  const [selectedCategory, setSelectedCategory] = useState(
+    isMothersInterview ? "interview_for_mothers" : "child_rearing"
+  );
   const [careerContext, setCareerContext] = useState("");
   const [careerQuestions, setCareerQuestions] = useState<
     Array<{ id: number; question: string; tips: string }>
   >([]);
+  const [careerAdvice, setCareerAdvice] = useState("");
+  const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   useEffect(() => {
     setCareerQuestions([]);
+    setCareerAdvice("");
   }, [selectedCategory]);
 
   // Queries
   const { data: cyclesData, isLoading: isLoadingCycles, refetch: refetchCycles } =
     trpc.femtech.getMenstrualCycles.useQuery();
 
-  const { data: careerSupportData, isLoading: isLoadingCareer, refetch: refetchCareer } =
+  const { data: careerSupportData, isLoading: isLoadingCareer } =
     trpc.femtech.getCareerSupport.useQuery();
 
   // Mutations
@@ -96,37 +107,6 @@ export default function WomensHealth() {
     },
   });
 
-  const generateAdviceMutation = trpc.femtech.generateCareerAdvice.useMutation({
-    onSuccess: () => {
-      toast.success("アドバイスを生成しました");
-      setCareerContext("");
-      refetchCareer();
-    },
-    onError: () => {
-      toast.error("アドバイス生成に失敗しました");
-    },
-  });
-
-  const generateQuestionsMutation = trpc.femtech.generateCareerQuestions.useMutation({
-    onSuccess: (data) => {
-      if (data.success) {
-        toast.success("質問を生成しました");
-        setCareerQuestions(
-          (data.questions ?? []).map((question, index) => ({
-            id: typeof (question as any).id === "number" ? (question as any).id : index + 1,
-            question: (question as any).question,
-            tips: (question as any).tips,
-          }))
-        );
-      } else {
-        toast.error(data.error || "質問の生成に失敗しました");
-      }
-    },
-    onError: () => {
-      toast.error("質問の生成に失敗しました");
-    },
-  });
-
   const cycles = cyclesData?.cycles || [];
   const careerSupport = careerSupportData?.support || [];
 
@@ -147,18 +127,59 @@ export default function WomensHealth() {
     });
   };
 
-  const handleGenerateAdvice = () => {
-    generateAdviceMutation.mutate({
-      category: selectedCategory as any,
-      context: careerContext || undefined,
+  const requestCareerSupport = async (action: "advice" | "questions") => {
+    const response = await fetch("/api/femtech/career", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        category: selectedCategory,
+        context: careerContext || undefined,
+      }),
     });
+    const responseText = await response.text();
+    let result: {
+      advice?: string;
+      questions?: Array<{ id: number; question: string; tips: string }>;
+      error?: string;
+    };
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      throw new Error(`AI応答の取得に失敗しました（HTTP ${response.status}）`);
+    }
+    if (!response.ok) {
+      throw new Error(result.error || "AI応答の取得に失敗しました");
+    }
+    return result;
   };
 
-  const handleGenerateQuestions = () => {
-    generateQuestionsMutation.mutate({
-      category: selectedCategory as any,
-      context: careerContext || undefined,
-    });
+  const handleGenerateAdvice = async () => {
+    setIsGeneratingAdvice(true);
+    try {
+      const result = await requestCareerSupport("advice");
+      if (!result.advice) throw new Error("アドバイスを取得できませんでした");
+      setCareerAdvice(result.advice);
+      toast.success("アドバイスを生成しました");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "アドバイス生成に失敗しました");
+    } finally {
+      setIsGeneratingAdvice(false);
+    }
+  };
+
+  const handleGenerateQuestions = async () => {
+    setIsGeneratingQuestions(true);
+    try {
+      const result = await requestCareerSupport("questions");
+      if (!result.questions) throw new Error("質問を取得できませんでした");
+      setCareerQuestions(result.questions);
+      toast.success("質問を生成しました");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "質問の生成に失敗しました");
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
   };
 
   return (
@@ -458,10 +479,10 @@ export default function WomensHealth() {
                   <div className="grid gap-3">
                     <Button
                       onClick={handleGenerateAdvice}
-                      disabled={generateAdviceMutation.isPending}
+                      disabled={isGeneratingAdvice}
                       className="w-full"
                     >
-                      {generateAdviceMutation.isPending ? (
+                      {isGeneratingAdvice ? (
                         <>
                           <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                           生成中...
@@ -473,22 +494,37 @@ export default function WomensHealth() {
                     <Button
                       variant="outline"
                       onClick={handleGenerateQuestions}
-                      disabled={generateQuestionsMutation.isPending}
+                      disabled={isGeneratingQuestions}
                       className="w-full"
                     >
-                      {generateQuestionsMutation.isPending ? (
+                      {isGeneratingQuestions ? (
                         <>
                           <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                           質問を生成中...
                         </>
                       ) : (
-                        "支援のための質問を生成"
+                        selectedCategory === "interview_for_mothers"
+                          ? "母親向けの面接質問を生成"
+                          : "相談内容に合う質問を生成"
                       )}
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {careerAdvice && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>AIからのアドバイス</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap leading-relaxed text-foreground/80">
+                    {careerAdvice}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {careerQuestions.length > 0 && (
               <Card>

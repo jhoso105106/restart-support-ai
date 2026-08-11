@@ -216,6 +216,7 @@ Content-Type: application/json
 | --- | --- | --- |
 | `functions/api/interview/questions.ts` | `POST /api/interview/questions` | 職種に合わせた面接質問の生成 |
 | `functions/api/mood/respond.ts` | `POST /api/mood/respond` | 気分チェックへのAI傾聴応答と危機時案内 |
+| `functions/api/femtech/career.ts` | `POST /api/femtech/career` | 女性向けキャリアアドバイス・面接質問の生成 |
 
 ## 9. データモデル
 
