@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,13 @@ export default function WomensHealth() {
   // Career advice state
   const [selectedCategory, setSelectedCategory] = useState("child_rearing");
   const [careerContext, setCareerContext] = useState("");
+  const [careerQuestions, setCareerQuestions] = useState<
+    Array<{ id: number; question: string; tips: string }>
+  >([]);
+
+  useEffect(() => {
+    setCareerQuestions([]);
+  }, [selectedCategory]);
 
   // Queries
   const { data: cyclesData, isLoading: isLoadingCycles, refetch: refetchCycles } =
@@ -100,6 +107,26 @@ export default function WomensHealth() {
     },
   });
 
+  const generateQuestionsMutation = trpc.femtech.generateCareerQuestions.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("質問を生成しました");
+        setCareerQuestions(
+          (data.questions ?? []).map((question, index) => ({
+            id: typeof (question as any).id === "number" ? (question as any).id : index + 1,
+            question: (question as any).question,
+            tips: (question as any).tips,
+          }))
+        );
+      } else {
+        toast.error(data.error || "質問の生成に失敗しました");
+      }
+    },
+    onError: () => {
+      toast.error("質問の生成に失敗しました");
+    },
+  });
+
   const cycles = cyclesData?.cycles || [];
   const careerSupport = careerSupportData?.support || [];
 
@@ -122,6 +149,13 @@ export default function WomensHealth() {
 
   const handleGenerateAdvice = () => {
     generateAdviceMutation.mutate({
+      category: selectedCategory as any,
+      context: careerContext || undefined,
+    });
+  };
+
+  const handleGenerateQuestions = () => {
+    generateQuestionsMutation.mutate({
       category: selectedCategory as any,
       context: careerContext || undefined,
     });
@@ -421,23 +455,60 @@ export default function WomensHealth() {
                     />
                   </div>
 
-                  <Button
-                    onClick={handleGenerateAdvice}
-                    disabled={generateAdviceMutation.isPending}
-                    className="w-full"
-                  >
-                    {generateAdviceMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                        生成中...
-                      </>
-                    ) : (
-                      "アドバイスを取得"
-                    )}
-                  </Button>
+                  <div className="grid gap-3">
+                    <Button
+                      onClick={handleGenerateAdvice}
+                      disabled={generateAdviceMutation.isPending}
+                      className="w-full"
+                    >
+                      {generateAdviceMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                          生成中...
+                        </>
+                      ) : (
+                        "アドバイスを取得"
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleGenerateQuestions}
+                      disabled={generateQuestionsMutation.isPending}
+                      className="w-full"
+                    >
+                      {generateQuestionsMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                          質問を生成中...
+                        </>
+                      ) : (
+                        "支援のための質問を生成"
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            {careerQuestions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>生成された質問</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {careerQuestions.map((item) => (
+                      <div key={item.id} className="space-y-2">
+                        <p className="font-medium text-foreground">
+                          {item.id}. {item.question}
+                        </p>
+                        <p className="text-sm text-foreground/70">💡 {item.tips}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Career Support History */}
             <Card>

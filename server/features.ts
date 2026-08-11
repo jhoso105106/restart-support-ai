@@ -109,6 +109,97 @@ const SAMPLE_INTERVIEW_QUESTIONS = [
   },
 ];
 
+const SAMPLE_FEMTECH_QUESTIONS: Record<string, Array<{question: string; tips: string;}>> = {
+  child_rearing: [
+    {
+      question: "育児と仕事を両立させるために、職場にどんなサポートが必要だと考えていますか？",
+      tips: "具体的なサポート例や、自分がどのように時間管理しているかを伝えると信頼感が高まります。",
+    },
+    {
+      question: "これまで育児を通じて身につけたスキルは、どのように仕事に活かせますか？",
+      tips: "育児経験の中での計画性、問題解決力、コミュニケーション力を仕事に結びつけて説明しましょう。",
+    },
+    {
+      question: "急な子どもの体調不良など予期せぬ出来事があった場合、どのように対応しますか？",
+      tips: "柔軟な対応力と、周囲との連携の取り方をアピールすると安心感が伝わります。",
+    },
+    {
+      question: "仕事と家庭のバランスを取るために、自分自身で工夫していることはありますか？",
+      tips: "時間管理や優先順位付けの方法を具体的に説明すると説得力が増します。",
+    },
+    {
+      question: "職場に復帰するときに、どのような働き方が最も力を発揮しやすいですか？",
+      tips: "自分の希望を明確にしつつ、企業側のニーズにも柔軟に対応できる姿勢を示しましょう。",
+    },
+  ],
+  career_resume: [
+    {
+      question: "職歴の空白期間にどのようなことに取り組んできましたか？",
+      tips: "キャリアに繋がる学びや状況の変化を前向きに説明してください。",
+    },
+    {
+      question: "再就職に向けて、現在どのようなスキルアップをしていますか？",
+      tips: "具体的な学習内容や目標を話すと意欲が伝わります。",
+    },
+    {
+      question: "これまでの職務経験の中で、自分の強みだと感じる点は何ですか？",
+      tips: "具体的な成果やエピソードを添えて説明すると説得力が高まります。",
+    },
+    {
+      question: "転職先でどのような役割を果たしたいと考えていますか？",
+      tips: "企業のニーズと自分の経験をつなげて話すことが大切です。",
+    },
+    {
+      question: "これまでの経験を新しい職場でどう活かしていきたいですか？",
+      tips: "取り組みたい仕事内容と、自分の強みの関係を明確にしましょう。",
+    },
+  ],
+  work_life_balance: [
+    {
+      question: "仕事とプライベートの時間をどのように調整していますか？",
+      tips: "日常の工夫や、ストレスを溜めないための取り組みを説明すると安心感があります。",
+    },
+    {
+      question: "仕事のペースが上がったとき、どのように体調管理していますか？",
+      tips: "具体的な休息方法や自己管理の工夫を話すと信頼につながります。",
+    },
+    {
+      question: "仕事と家庭の両立で大切にしている価値観は何ですか？",
+      tips: "優先順位の付け方や、自分にとってのバランスを言葉にしましょう。",
+    },
+    {
+      question: "上司や同僚に対して、どのような働き方の説明をしますか？",
+      tips: "率直で前向きなコミュニケーションの方法を伝えると安心されます。",
+    },
+    {
+      question: "今後のキャリアを考える上で、どのような働き方を理想としていますか？",
+      tips: "長期的な目標と日々の実践のバランスを示すと説得力があります。",
+    },
+  ],
+  interview_for_mothers: [
+    {
+      question: "育児経験をどのように仕事の強みとして伝えますか？",
+      tips: "計画性、忍耐力、優先順位付けなど具体例とともに話すと良いです。",
+    },
+    {
+      question: "職務経歴に空白期間がある場合、どのように説明しますか？",
+      tips: "なぜその期間が必要だったかと、そこで得た成長を前向きに述べましょう。",
+    },
+    {
+      question: "急な家庭の事情に対応する必要があるとき、職場とどのように連携しますか？",
+      tips: "自己管理とコミュニケーションの両面で安心感を与える回答が大切です。",
+    },
+    {
+      question: "母親としての経験から、職場にどんな価値を提供できると思いますか？",
+      tips: "人間関係の構築力や課題解決力を具体的に示すと説得力があります。",
+    },
+    {
+      question: "柔軟な働き方が必要になった場合、どのように対応したいですか？",
+      tips: "希望を述べつつ、チームや業務への貢献も忘れずに伝えましょう。",
+    },
+  ],
+};
+
 // Sample feedback for demo mode
 const generateSampleFeedback = () => ({
   specificity: {
@@ -790,6 +881,92 @@ Provide your response as supportive, practical advice.`;
         return {
           success: false,
           error: "Failed to generate career advice",
+        };
+      }
+    }),
+
+  generateCareerQuestions: protectedProcedure
+    .input(
+      z.object({
+        category: z.enum([
+          "child_rearing",
+          "career_resume",
+          "work_life_balance",
+          "interview_for_mothers",
+        ]),
+        context: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      if (DEV_MODE) {
+        const sample = SAMPLE_FEMTECH_QUESTIONS[input.category] ?? [];
+        return { success: true, questions: sample };
+      }
+
+      const categoryPrompts: Record<string, string> = {
+        child_rearing: `You are a career coach specializing in supporting working mothers and parents in their 50s.
+Generate 5 thoughtful questions that help a job seeker reflect on childcare balance, flexible work, and career priorities.
+For each question, include a short Japanese tip on how to answer it effectively.`,
+
+        career_resume: `You are a career coach helping women return to the workforce after career breaks.
+Generate 5 thoughtful questions that help a job seeker explain their career gap, highlight transferable skills, and build confidence.
+For each question, include a short Japanese tip on how to answer it effectively.`,
+
+        work_life_balance: `You are a career coach specializing in work-life balance for women in their 50s.
+Generate 5 thoughtful questions that help a job seeker discuss time management, self-care, and healthy boundaries.
+For each question, include a short Japanese tip on how to answer it effectively.`,
+
+        interview_for_mothers: `You are an interview coach helping mothers and caregivers prepare for job interviews.
+Generate 5 practical interview-style questions focused on explaining employment gaps, caregiving experience, flexible working needs, and strengths from parenting.
+For each question, include a short Japanese tip on how to answer it effectively.`,
+      };
+
+      const prompt = `${categoryPrompts[input.category]}
+${input.context ? `\nAdditional context: ${input.context}` : ""}
+Respond with only the following JSON object:
+{"questions":[{"question":"...","tips":"..."}]}`;
+
+      try {
+        const response = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+        });
+
+        const content = response.choices[0]?.message.content;
+        if (!content || typeof content !== "string") {
+          throw new Error("No response from LLM");
+        }
+
+        const parsed = JSON.parse(content) as Record<string, unknown>;
+        const rawQuestions = Array.isArray(parsed.questions)
+          ? parsed.questions
+          : undefined;
+
+        if (
+          !Array.isArray(rawQuestions) ||
+          rawQuestions.length !== 5 ||
+          !rawQuestions.every(
+            (item) =>
+              typeof item === "object" &&
+              item !== null &&
+              typeof (item as any).question === "string" &&
+              typeof (item as any).tips === "string"
+          )
+        ) {
+          throw new Error("Invalid question format");
+        }
+
+        const questions = rawQuestions.map((item, index) => ({
+          id: index + 1,
+          question: (item as any).question.trim(),
+          tips: (item as any).tips.trim(),
+        }));
+
+        return { success: true, questions };
+      } catch (error) {
+        console.error("Error generating femtech career questions:", error);
+        return {
+          success: false,
+          error: "Failed to generate career questions",
         };
       }
     }),
