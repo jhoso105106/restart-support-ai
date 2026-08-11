@@ -185,10 +185,14 @@ export default function WomensHealth() {
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">女性のための総合サポート</h1>
+        <div className="container flex min-h-16 items-center justify-between gap-2 py-3">
+          <h1 className="min-w-0 text-lg font-bold leading-tight text-primary sm:text-2xl">
+            女性のための総合サポート
+          </h1>
           <Button
             variant="ghost"
+            size="sm"
+            className="shrink-0"
             onClick={() => navigate("/")}
           >
             ホームに戻る
