@@ -24,6 +24,59 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 
+/**
+ * Self-PR generation router
+ */
+export const selfPRRouter = router({
+  generate: protectedProcedure
+    .input(
+      z.object({
+        experience: z.string(),
+        skills: z.string(),
+        achievements: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const prompt = `
+あなたは50代以上の求職者を支援するプロのキャリアアドバイザーです。
+以下の情報を元に、応募企業に響く魅力的な自己PR文を作成してください。
+
+【職務経歴】
+${input.experience}
+
+【スキル・専門知識】
+${input.skills}
+
+【実績・成果】
+${input.achievements || "特になし"}
+
+作成時のポイント：
+- 50代ならではの「経験の深さ」「安定感」「責任感」を強調する。
+- 若手にはない、問題解決能力や後進育成の視点を含める。
+- 謙虚でありながらも、即戦力として貢献できる自信を感じさせるトーンにする。
+- 箇条書きなどを使い、読みやすい構成（【自己PR】【強み】【実績】【今後の展望】など）にする。
+- 約400〜600文字程度で構成する。
+
+出力は自己PR本文のみを返してください。
+`;
+
+      try {
+        const response = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+        });
+
+        const content = response.choices[0]?.message.content;
+        if (!content || typeof content !== "string")
+          throw new Error("No response from LLM");
+
+        return { success: true, prText: content };
+      } catch (error) {
+        console.error("Error generating self-PR:", error);
+        return { success: false, error: "自己PRの生成に失敗しました" };
+      }
+    }),
+});
+
 // Development mode flag for demo data
 const DEV_MODE = process.env.DEV_MODE === "true" || process.env.NODE_ENV === "development";
 

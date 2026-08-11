@@ -9,6 +9,7 @@ import {
   learningRouter,
   profileRouter,
   femtechRouter,
+  selfPRRouter,
 } from "./features";
 
 export const appRouter = router({
@@ -29,6 +30,7 @@ export const appRouter = router({
   learning: learningRouter,
   profile: profileRouter,
   femtech: femtechRouter,
+  selfPR: selfPRRouter,
 });
 
 export type AppRouter = typeof appRouter;
