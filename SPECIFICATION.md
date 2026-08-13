@@ -125,7 +125,6 @@ Content-Type: application/json
 - 危機キーワード（例: 自殺、死、消えたい、自傷）を検知した場合、LLMを呼び出さず、相談先電話番号を含む緊急案内を返す。
 - 危機に該当しない場合、Workers AIが共感的な応答と次の行動を提案する。
 - 気分が高い場合は面接練習、中程度では相談窓口、低い場合は地域活動、その他は休息を推奨する。
-- Pages Functionでの気分チェック結果は、静的Pages環境ではDBへ保存しない。
 - 危機に該当しない気分チェック結果はD1へ保存し、画面に直近5件を表示する。危機検知時は自動保存しない。
 
 ### 5.1 Workers AI 気分応答API
@@ -234,9 +233,47 @@ DBは MySQL を使用する。主なテーブルは次のとおり。
 
 ### 9.1 Cloudflare D1履歴
 
-新規の気分チェック履歴とAI相談履歴はCloudflare D1へ保存する。認証は使用せず、ブラウザのlocalStorageで生成・保持するランダムUUIDを `user_id` として履歴を分離する。UUIDは匿名識別子であり、認証・認可を提供しない。localStorageを消去すると以前の履歴へアクセスできない。
+ハッカソン版では、Cloudflare Pages上で履歴を保存・参照できるよう、既存の MySQL / Express / tRPC とは分離してCloudflare D1を使用する。
 
-D1には `users`、`mood_logs`、`interview_history`、`counseling_history` を作成する。面接履歴APIと一覧表示は用意するが、面接画面からのD1保存は後続フェーズとする。
+```text
+React SPA
+   |
+   v
+Cloudflare Pages Functions
+   |-- Workers AI
+   `-- Cloudflare D1
+```
+
+このD1履歴機能ではOAuthを使用しない。ブラウザの初回利用時にランダムUUIDを生成して `localStorage` に保持し、API呼び出し時に `X-User-Id` ヘッダーとして送信する。UUIDは履歴をブラウザ単位で分離するための匿名識別子であり、本人確認・認証・認可を提供しない。`localStorage` を消去すると、同じブラウザから以前の履歴へアクセスできなくなる。
+
+ハッカソンでの動作を優先して認証実装の工数を抑えつつ、将来はUUIDをOAuth User IDへ置き換えられる構成とする。
+
+#### 9.1.1 D1スキーマ
+
+| テーブル | カラム |
+| --- | --- |
+| `users` | `id TEXT PRIMARY KEY`, `name TEXT`, `created_at TEXT` |
+| `mood_logs` | `id INTEGER PRIMARY KEY`, `user_id TEXT`, `mood INTEGER`, `comment TEXT`, `created_at TEXT` |
+| `interview_history` | `id INTEGER PRIMARY KEY`, `user_id TEXT`, `question TEXT`, `answer TEXT`, `score INTEGER`, `created_at TEXT` |
+| `counseling_history` | `id INTEGER PRIMARY KEY`, `user_id TEXT`, `consultation TEXT`, `advice TEXT`, `created_at TEXT` |
+
+#### 9.1.2 履歴API
+
+| メソッド・URL | 用途 |
+| --- | --- |
+| `GET /api/history?type=mood` | 気分チェック履歴の取得 |
+| `GET /api/history?type=interview` | 面接練習履歴の取得 |
+| `GET /api/history?type=counseling` | AI相談履歴の取得 |
+| `GET /api/history?type=all` | 全履歴の取得 |
+| `POST /api/history` | `mood`、`interview`、`counseling` の履歴保存 |
+
+気分チェックでは `mood`、`comment`、`created_at`、AIキャリア相談では `consultation`、`advice`、`created_at` を保存する。
+
+`interview_history` テーブルとAPIは実装済みだが、`Interview.tsx` の保存処理はD1へ未接続であり、後続フェーズで対応する。
+
+#### 9.1.3 履歴画面
+
+`/history` では、このブラウザに紐づく履歴を新しい順に表示する。表示カテゴリは「すべて」「気分チェック」「AI相談」である。面接練習履歴の画面表示は、面接画面からのD1保存接続とあわせて後続フェーズで対応する。
 
 ## 10. 技術構成
 
@@ -272,6 +309,16 @@ Cloudflare Pages プロジェクトの **Settings → Bindings** で、次の bi
 | D1 database | `DB` | 気分チェック・AI相談・面接練習履歴 |
 
 `AI` は環境変数やシークレットではない。設定変更後は再デプロイが必要である。
+
+本番環境の設定は次のとおりである。
+
+| 項目 | 値 |
+| --- | --- |
+| Pagesプロジェクト | `restart-support-ai` |
+| D1データベース | `restart-support-history` |
+| D1 binding | `DB` |
+| D1 `database_id` | `154033b0-c934-4bf0-b740-6e38c8ccb15d` |
+| Workers AI binding | `AI` |
 
 ### 11.3 環境変数
 
@@ -318,3 +365,21 @@ npm run pages:dev
 - Workers AI の `AI` binding は Preview と Production でそれぞれ設定状態を確認する。
 - Cloudflare Function ログのCLI閲覧には Cloudflare APIトークンまたは Wrangler ログインが必要である。
 - tRPCを使う各機能は Express/Node サーバー、OAuth、MySQLへの接続を前提とする。Cloudflare Pages上で利用する範囲は、デプロイ形態に応じて別途確認する。
+- D1履歴機能には認証がなく、UUIDによる履歴分離のみを行う。デモ版には個人情報、連絡先、医療情報などの機微情報を入力しない。
+
+## 15. 2026年8月 D1履歴対応の実施記録
+
+次の作業と検証を完了した。
+
+- D1データベースの作成
+- ローカルおよび本番D1へのマイグレーション
+- PagesプロジェクトへのD1 `DB` binding設定
+- Workers AI `AI` binding設定
+- `npm run d1:migrate:local`
+- `npm run check`
+- `npm run test`
+- `npm run build`
+
+女性向け画面からは、既存の tRPC + MySQL に依存していた月経周期入力、月経周期履歴、月経関連UIを削除した。現在は「女性向けAIキャリア支援」として、AIキャリア相談、AIアドバイス生成、D1履歴保存・参照、母親向け面接対策への導線を提供する。
+
+今後はPhase 2で匿名UUIDからOAuth User IDへ移行し、Phase 3で履歴の編集、削除、検索、フィルタ、CSV出力を追加する予定である。
