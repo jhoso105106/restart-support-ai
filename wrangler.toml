@@ -1,0 +1,13 @@
+name = "restart-support-ai"
+compatibility_date = "2026-08-13"
+pages_build_output_dir = "dist/public"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "restart-support-history"
+# Replace this placeholder with the ID returned by `wrangler d1 create`.
+database_id = "154033b0-c934-4bf0-b740-6e38c8ccb15d"
+migrations_dir = "migrations"

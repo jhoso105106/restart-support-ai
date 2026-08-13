@@ -114,18 +114,18 @@ export default function Home() {
             <Card className="hover:shadow-lg transition-shadow md:col-span-2">
               <CardHeader>
                 <Heart className="w-8 h-8 text-accent mb-2" />
-                <CardTitle>女性のための総合サポート</CardTitle>
-                <CardDescription>月経周期管理とキャリア支援</CardDescription>
+                <CardTitle>女性向けAIキャリア支援</CardTitle>
+                <CardDescription>働き方とキャリア再開をAIで支援</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-foreground/70 mb-4">
-                  月経周期の追跡、症状管理、育児との両立支援、キャリア再開アドバイスなど、女性特有のニーズをサポートします。
+                  育児との両立、キャリア再開、仕事と生活のバランス、母親向け面接対策をサポートします。
                 </p>
                 <Button
                   className="w-full"
                   onClick={() => navigate("/womens-health")}
                 >
-                  女性サポートを利用する
+                  AIキャリア支援を利用する
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 <Button

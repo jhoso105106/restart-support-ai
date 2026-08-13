@@ -2,7 +2,7 @@
 
 ## 1. 概要
 
-再スタート応援AI（`restart-support-ai`）は、主に50代以上の求職者の再就職・キャリア再開を支援するWebアプリケーションである。ココロナビを起点に、AI面接練習、AI傾聴を使う気分チェック、東京都等の公的情報に基づく相談窓口検索、プロフィール、女性の健康・キャリア支援を提供する。
+再スタート応援AI（`restart-support-ai`）は、主に50代以上の求職者の再就職・キャリア再開を支援するWebアプリケーションである。ココロナビを起点に、AI面接練習、AI傾聴を使う気分チェック、東京都等の公的情報に基づく相談窓口検索、プロフィール、女性向けAIキャリア支援を提供する。
 
 フロントエンドは React SPA、アプリケーションAPIは Express + tRPC、DBは MySQL + Drizzle ORM を採用している。Cloudflare Pages では、面接質問を生成するための Pages Function と Workers AI を利用する。
 
@@ -25,7 +25,8 @@
 | `/support` | 支援窓口 | 就労・こころ・労働・地域・リスキリング等の相談資源の検索 |
 | `/dashboard` | ココロナビ | アプリの紹介と、面接練習・気分チェック・支援窓口への導線 |
 | `/self-pr` | 自己PR支援 | 自己PR作成を支援する画面 |
-| `/womens-health` | 女性の健康・キャリア支援 | 月経記録とキャリア支援 |
+| `/womens-health` | 女性向けAIキャリア支援 | 働き方・キャリア再開・面接に関するAI相談 |
+| `/history` | 履歴 | このブラウザの気分チェック・AI相談・面接練習履歴 |
 | `/404` | Not Found | 未定義URLの案内 |
 
 全画面は `ErrorBoundary` で囲まれ、レンダリング例外時は「再試行」で子ツリーを再生成できる。画面遷移時もエラー状態をリセットする。
@@ -125,6 +126,7 @@ Content-Type: application/json
 - 危機に該当しない場合、Workers AIが共感的な応答と次の行動を提案する。
 - 気分が高い場合は面接練習、中程度では相談窓口、低い場合は地域活動、その他は休息を推奨する。
 - Pages Functionでの気分チェック結果は、静的Pages環境ではDBへ保存しない。
+- 危機に該当しない気分チェック結果はD1へ保存し、画面に直近5件を表示する。危機検知時は自動保存しない。
 
 ### 5.1 Workers AI 気分応答API
 
@@ -173,13 +175,7 @@ Content-Type: application/json
 
 プロフィールは初回取得時に自動作成する。自己紹介、希望職種、経験年数、スキル、希望地域、都道府県コードを更新できる。スキルはJSON配列として保存する。
 
-## 7. 女性の健康・キャリア支援
-
-### 7.1 月経記録
-
-開始日、終了日、症状、経血量、気分、メモを登録・取得・更新・削除できる。利用者本人の記録だけを対象とする。
-
-### 7.2 キャリア支援
+## 7. 女性向けAIキャリア支援
 
 女性特有の状況に応じた助言に加えて、特に「母親向けの面接対策」では、想定面接質問と回答のポイントを提示する機能を提供する。
 
@@ -206,7 +202,7 @@ Content-Type: application/json
 | `support` | 支援資源検索（現在の支援窓口画面は静的JSONを使用） |
 | `learning` | 学習履歴取得・完了化 |
 | `profile` | プロフィール取得・更新 |
-| `femtech` | 月経記録、女性向けキャリア支援 |
+| `femtech` | 旧MySQL機能。女性向け画面のAI相談履歴はD1を使用 |
 
 ### 8.2 Cloudflare Pages Function
 
@@ -217,6 +213,7 @@ Content-Type: application/json
 | `functions/api/interview/questions.ts` | `POST /api/interview/questions` | 職種に合わせた面接質問の生成 |
 | `functions/api/mood/respond.ts` | `POST /api/mood/respond` | 気分チェックへのAI傾聴応答と危機時案内 |
 | `functions/api/femtech/career.ts` | `POST /api/femtech/career` | 女性向けキャリアアドバイス・面接質問の生成 |
+| `functions/api/history.ts` | `GET/POST /api/history` | D1履歴の取得・保存 |
 
 ## 9. データモデル
 
@@ -230,10 +227,16 @@ DBは MySQL を使用する。主なテーブルは次のとおり。
 | `support_resources` | 相談窓口・支援サービス用の旧DBテーブル。画面の標準データソースは静的JSON |
 | `learning_logs` | 活動履歴と完了状態 |
 | `user_profiles` | 希望職種、経験、スキル、希望地域 |
-| `menstrual_cycles` | 月経・症状・気分の記録 |
+| `menstrual_cycles` | 旧MySQLテーブル。現行画面では使用しない |
 | `womens_career_support` | 女性向けキャリア助言 |
 
 利用者に属するデータは `users.id` を外部キーとして参照し、利用者削除時には関連レコードも削除する。
+
+### 9.1 Cloudflare D1履歴
+
+新規の気分チェック履歴とAI相談履歴はCloudflare D1へ保存する。認証は使用せず、ブラウザのlocalStorageで生成・保持するランダムUUIDを `user_id` として履歴を分離する。UUIDは匿名識別子であり、認証・認可を提供しない。localStorageを消去すると以前の履歴へアクセスできない。
+
+D1には `users`、`mood_logs`、`interview_history`、`counseling_history` を作成する。面接履歴APIと一覧表示は用意するが、面接画面からのD1保存は後続フェーズとする。
 
 ## 10. 技術構成
 
@@ -244,6 +247,7 @@ DBは MySQL を使用する。主なテーブルは次のとおり。
 | クライアント状態・通信 | TanStack Query, tRPC, SuperJSON |
 | サーバー | Node.js, Express, tRPC |
 | DB | MySQL, Drizzle ORM |
+| 履歴DB | Cloudflare D1（匿名ブラウザUUID単位） |
 | 認証 | OAuth、Cookieセッション |
 | AI | Cloudflare Workers AI（面接質問、気分チェック）、既存のLLM抽象化 |
 | ホスティング | Cloudflare Pages、Cloudflare Pages Functions |
@@ -265,6 +269,7 @@ Cloudflare Pages プロジェクトの **Settings → Bindings** で、次の bi
 | 種別 | 名前 | 用途 |
 | --- | --- | --- |
 | Workers AI | `AI` | 面接質問と気分チェックの生成 |
+| D1 database | `DB` | 気分チェック・AI相談・面接練習履歴 |
 
 `AI` は環境変数やシークレットではない。設定変更後は再デプロイが必要である。
 
@@ -290,6 +295,8 @@ Workers AI 面接質問生成に新たな環境変数は不要である。既存
 npm run check
 npm run build
 npm run test
+npm run d1:migrate:local
+npm run pages:dev
 ```
 
 開発サーバーは `npm run dev` で起動する。

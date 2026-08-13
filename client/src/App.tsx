@@ -10,6 +10,7 @@ import Support from "./pages/Support";
 import Dashboard from "./pages/Dashboard";
 import SelfPR from "./pages/SelfPR";
 import WomensHealth from "./pages/WomensHealth";
+import History from "./pages/History";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/self-pr" component={SelfPR} />
       <Route path="/womens-health" component={WomensHealth} />
+      <Route path="/history" component={History} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

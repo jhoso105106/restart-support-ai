@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  getHistory,
+  saveMoodHistory,
+  type MoodHistoryItem,
+} from "@/lib/history-api";
 import { Loader2, AlertTriangle, Heart } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -42,6 +47,28 @@ export default function Mood() {
   const [crisisResources, setCrisisResources] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [history, setHistory] = useState<MoodHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    setHistoryError("");
+    try {
+      const items = await getHistory("mood", 5);
+      setHistory(items.filter((item): item is MoodHistoryItem => item.type === "mood"));
+    } catch (error) {
+      setHistoryError(
+        error instanceof Error ? error.message : "気分履歴を取得できませんでした。"
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   const handleCheckMood = async () => {
     if (!situation.trim()) {
@@ -88,6 +115,16 @@ export default function Mood() {
         setAiResponse(result.aiResponse || "");
         setSuggestedAction(result.suggestedAction || "rest");
         setStep("response");
+        try {
+          await saveMoodHistory(moodLevel, situation);
+          await loadHistory();
+        } catch (historySaveError) {
+          setHistoryError(
+            historySaveError instanceof Error
+              ? historySaveError.message
+              : "気分履歴を保存できませんでした。"
+          );
+        }
       } else {
         throw new Error(result.error || "AI傾聴に失敗しました。");
       }
@@ -192,12 +229,14 @@ export default function Mood() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between h-16">
           <h1 className="text-2xl font-bold text-primary">気分チェック</h1>
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-          >
-            ホームに戻る
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/history")}>
+              履歴を見る
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              ホームに戻る
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -360,6 +399,52 @@ export default function Mood() {
             </CardContent>
           </Card>
         )}
+
+        <Card className="max-w-2xl mx-auto mt-8">
+          <CardHeader>
+            <CardTitle>最近の気分チェック</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-xs text-foreground/60">
+              このブラウザに保存された識別子に紐づく直近5件です。
+            </p>
+            {historyLoading ? (
+              <div className="flex items-center justify-center gap-2 py-6 text-foreground/70">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                読み込み中...
+              </div>
+            ) : historyError ? (
+              <div className="space-y-3 py-4 text-center">
+                <p className="text-sm text-destructive" role="alert">
+                  {historyError}
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void loadHistory()}>
+                  再読み込み
+                </Button>
+              </div>
+            ) : history.length === 0 ? (
+              <p className="py-6 text-center text-sm text-foreground/70">
+                気分チェックの履歴はまだありません。
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {history.map(item => (
+                  <div key={item.id} className="rounded-lg border border-border p-4">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="font-medium">気分 {item.mood}/5</span>
+                      <time className="text-xs text-foreground/60">
+                        {new Date(`${item.createdAt}Z`).toLocaleString("ja-JP")}
+                      </time>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm text-foreground/80">
+                      {item.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
