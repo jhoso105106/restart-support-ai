@@ -26,6 +26,11 @@ type SupportResource = {
   region: string[];
   sourceName: string;
   sourceUrl: string;
+  // new metadata fields for open data visibility
+  sourceType?: string; // e.g., 'tokyo', 'national', 'ward'
+  datasetId?: string;
+  lastUpdated?: string;
+  portalUrl?: string;
 };
 
 const isOptionalString = (value: unknown): value is string | null | undefined =>
@@ -45,6 +50,11 @@ const isSupportResource = (value: unknown): value is SupportResource => {
     resource.region.every(region => typeof region === "string") &&
     typeof resource.sourceName === "string" &&
     typeof resource.sourceUrl === "string" &&
+    // optional metadata fields may be absent or strings
+    (resource.sourceType === undefined || typeof resource.sourceType === 'string') &&
+    (resource.datasetId === undefined || typeof resource.datasetId === 'string') &&
+    (resource.lastUpdated === undefined || typeof resource.lastUpdated === 'string') &&
+    (resource.portalUrl === undefined || typeof resource.portalUrl === 'string') &&
     isOptionalString(resource.description) &&
     isOptionalString(resource.address) &&
     isOptionalString(resource.phone) &&
@@ -56,13 +66,40 @@ const isSupportResource = (value: unknown): value is SupportResource => {
 };
 
 export default function Support() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("employment");
   const [selectedRegion, setSelectedRegion] = useState("全国");
   const [selectedAge, setSelectedAge] = useState("全年齢");
   const [resources, setResources] = useState<SupportResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+
+  // Highlighting when navigated from AI (e.g., /support?highlight=tokyo-mental-health-welfare-center&reason=...)
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [highlightReason, setHighlightReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    // read query params from location (wouter) or fallback to window.location
+    const search = typeof location === 'string' ? new URLSearchParams(location.split('?')[1]) : new URLSearchParams(window.location.search);
+    const hid = search.get('highlight');
+    const reason = search.get('reason');
+    if (hid) {
+      setHighlightId(hid);
+      setHighlightReason(reason ? decodeURIComponent(reason) : null);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (!isLoading && highlightId) {
+      const el = document.getElementById(`resource-${highlightId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-yellow-300');
+        // remove highlight after a short timeout so it doesn't persist forever
+        setTimeout(() => el.classList.remove('ring-4', 'ring-yellow-300'), 5000);
+      }
+    }
+  }, [isLoading, highlightId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -232,10 +269,19 @@ export default function Support() {
               <Card key={resource.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-primary mb-1">
-                        {resource.name}
-                      </h3>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-baseline gap-3">
+                        <h3 className="text-lg font-bold text-primary mb-1">
+                          {resource.name}
+                        </h3>
+                        {/* Tokyo open data badge if sourceType === 'tokyo' */}
+                        {resource.sourceType === 'tokyo' ? (
+                          <span className="text-xs font-semibold bg-green-50 text-green-800 px-2 py-1 rounded-md">東京都オープンデータ</span>
+                        ) : (
+                          <span className="text-xs font-medium bg-muted px-2 py-1 rounded-md text-foreground/70">{resource.sourceType || resource.sourceName}</span>
+                        )}
+                      </div>
+
                       <p className="text-sm text-accent font-medium">
                         {resource.category === "employment" && "就労支援"}
                         {resource.category === "mental" && "メンタルヘルス"}
@@ -310,15 +356,39 @@ export default function Support() {
                       </p>
                     )}
 
-                    <a
-                      href={resource.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-foreground/60 hover:text-accent hover:underline"
-                    >
-                      出典：{resource.sourceName}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-xs text-foreground/60">
+                        {resource.datasetId && (
+                          <div>データセット: <span className="font-medium">{resource.datasetId}</span></div>
+                        )}
+                        {resource.lastUpdated && (
+                          <div>更新: <span className="font-medium">{resource.lastUpdated}</span></div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {resource.portalUrl && (
+                          <a
+                            href={resource.portalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-accent hover:underline"
+                          >
+                            データソースを確認
+                          </a>
+                        )}
+
+                        <a
+                          href={resource.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-foreground/60 hover:text-accent hover:underline"
+                        >
+                          出典：{resource.sourceName}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
