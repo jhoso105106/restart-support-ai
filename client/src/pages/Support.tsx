@@ -239,6 +239,12 @@ export default function Support() {
 
         {/* Resources List */}
         <div className="space-y-4">
+          {highlightReason && (
+            <div className="max-w-2xl mx-auto p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+              <p className="font-medium">おすすめの窓口</p>
+              <p className="mt-1">{highlightReason}</p>
+            </div>
+          )}
           {isLoading ? (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
@@ -266,7 +272,7 @@ export default function Support() {
             </Card>
           ) : (
             filteredResources.map((resource) => (
-              <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+                          <Card key={resource.id} id={`resource-${resource.id}`} className={`hover:shadow-lg transition-shadow ${highlightId === String(resource.id) ? 'ring-4 ring-yellow-300' : ''}`}>
                 <CardContent className="pt-6">
                   <div className="space-y-4">
                     <div className="flex items-start justify-between gap-3">
