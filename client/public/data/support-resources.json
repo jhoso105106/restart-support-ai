@@ -8,7 +8,11 @@
     "website": "https://www.hellowork.mhlw.go.jp/",
     "targetAge": ["全年齢"],
     "sourceName": "厚生労働省 ハローワークインターネットサービス",
-    "sourceUrl": "https://www.hellowork.mhlw.go.jp/"
+    "sourceUrl": "https://www.hellowork.mhlw.go.jp/",
+    "sourceType": "national",
+    "datasetId": "mhlw-hellowork-2024",
+    "lastUpdated": "2024-04-01",
+    "portalUrl": "https://www.mhlw.go.jp/"
   },
   {
     "id": "tokyo-shigoto-center",
@@ -21,7 +25,11 @@
     "website": "https://www.tokyoshigoto.jp/",
     "targetAge": ["50代", "60代以上"],
     "sourceName": "東京しごとセンター",
-    "sourceUrl": "https://www.tokyoshigoto.jp/"
+    "sourceUrl": "https://www.tokyoshigoto.jp/",
+    "sourceType": "tokyo",
+    "datasetId": "tokyo-shigoto-001",
+    "lastUpdated": "2026-06-15",
+    "portalUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/000001"
   },
   {
     "id": "kokoro-health-dial",
@@ -33,7 +41,11 @@
     "businessHours": "受付時間は地域により異なります。",
     "targetAge": ["全年齢"],
     "sourceName": "厚生労働省 こころの健康相談統一ダイヤル",
-    "sourceUrl": "https://www.mhlw.go.jp/kokoro/"
+    "sourceUrl": "https://www.mhlw.go.jp/kokoro/",
+    "sourceType": "national",
+    "datasetId": "mhlw-kokoro-2025",
+    "lastUpdated": "2025-01-10",
+    "portalUrl": "https://www.mhlw.go.jp/kokoro/"
   },
   {
     "id": "tokyo-mental-health-welfare-center",
@@ -44,7 +56,11 @@
     "website": "https://www.fukushi.metro.tokyo.lg.jp/shougai/shisetsu/seishin/chubu",
     "targetAge": ["全年齢"],
     "sourceName": "東京都福祉局",
-    "sourceUrl": "https://www.fukushi.metro.tokyo.lg.jp/"
+    "sourceUrl": "https://www.fukushi.metro.tokyo.lg.jp/",
+    "sourceType": "tokyo",
+    "datasetId": "tokyo-mental-2023",
+    "lastUpdated": "2023-11-20",
+    "portalUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/000002"
   },
   {
     "id": "chiyoda-social-welfare-council",
@@ -55,7 +71,11 @@
     "website": "https://www.chiyoda-cosw.jp/",
     "targetAge": ["50代", "60代以上"],
     "sourceName": "千代田区社会福祉協議会",
-    "sourceUrl": "https://www.chiyoda-cosw.jp/"
+    "sourceUrl": "https://www.chiyoda-cosw.jp/",
+    "sourceType": "ward",
+    "datasetId": "chiyoda-cosw-01",
+    "lastUpdated": "2024-08-01",
+    "portalUrl": "https://www.chiyoda-cosw.jp/"
   },
   {
     "id": "minato-social-welfare-council",
@@ -66,7 +86,11 @@
     "website": "https://minato-cosw.net/",
     "targetAge": ["50代", "60代以上"],
     "sourceName": "港区社会福祉協議会",
-    "sourceUrl": "https://minato-cosw.net/"
+    "sourceUrl": "https://minato-cosw.net/",
+    "sourceType": "ward",
+    "datasetId": "minato-cosw-01",
+    "lastUpdated": "2024-05-10",
+    "portalUrl": "https://minato-cosw.net/"
   },
   {
     "id": "tokyo-vocational-training",
@@ -77,7 +101,11 @@
     "website": "https://www.hataraku.metro.tokyo.lg.jp/vsdc/",
     "targetAge": ["50代", "60代以上"],
     "sourceName": "東京都産業労働局",
-    "sourceUrl": "https://www.hataraku.metro.tokyo.lg.jp/"
+    "sourceUrl": "https://www.hataraku.metro.tokyo.lg.jp/",
+    "sourceType": "tokyo",
+    "datasetId": "tokyo-voc-training-2022",
+    "lastUpdated": "2022-12-01",
+    "portalUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/000003"
   },
   {
     "id": "hello-work-training",
@@ -88,6 +116,10 @@
     "website": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/jinzaikaihatsu/hellotraining_top.html",
     "targetAge": ["全年齢"],
     "sourceName": "厚生労働省 ハロートレーニング",
-    "sourceUrl": "https://www.mhlw.go.jp/"
+    "sourceUrl": "https://www.mhlw.go.jp/",
+    "sourceType": "national",
+    "datasetId": "mhlw-hellotraining-2024",
+    "lastUpdated": "2024-02-01",
+    "portalUrl": "https://www.mhlw.go.jp/"
   }
 ]
