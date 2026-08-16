@@ -9,6 +9,7 @@ import {
 } from "@/lib/history-api";
 import { Loader2, AlertTriangle, Heart } from "lucide-react";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 
 type Step = "mood-select" | "situation" | "response" | "crisis";
 
@@ -158,11 +159,7 @@ export default function Mood() {
   if (crisisDetected) {
     return (
       <div className="min-h-screen bg-background sacred-geometry-bg">
-        <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-          <div className="container flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-primary">気分チェック</h1>
-          </div>
-        </header>
+        <KokoroHeader />
 
         <div className="container py-12">
           <Card className="max-w-2xl mx-auto border-red-200 bg-red-50">
@@ -228,19 +225,7 @@ export default function Mood() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">気分チェック</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/history")}>
-              履歴を見る
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/")}>
-              ホームに戻る
-            </Button>
-          </div>
-        </div>
-      </header>
+      <KokoroHeader><Button variant="outline" onClick={() => navigate("/history")}>履歴</Button></KokoroHeader>
 
       <div className="container py-12">
         {step === "mood-select" && (

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, MapPin, Phone, Globe, Clock, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 
 const CATEGORIES = [
   { value: "employment", label: "就労支援" },
@@ -153,17 +154,7 @@ export default function Support() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">支援窓口案内</h1>
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-          >
-            ホームに戻る
-          </Button>
-        </div>
-      </header>
+      <KokoroHeader />
 
       <div className="container py-12">
             {/* Tokyo Open Data banner */}

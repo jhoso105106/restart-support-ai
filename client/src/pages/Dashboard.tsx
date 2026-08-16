@@ -1,92 +1,44 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, Building2, HeartHandshake, House, Leaf, MessageCircleHeart, Mic2 } from "lucide-react";
 import { useLocation } from "wouter";
+
+const menuItems = [
+  { title: "面接練習", description: "自信を持って話せるように", path: "/interview", icon: Mic2, color: "orange" },
+  { title: "気分チェック", description: "今の気持ちをゆっくり整理", path: "/mood", icon: MessageCircleHeart, color: "yellow" },
+  { title: "相談窓口を探す", description: "あなたに合う公的な相談先へ", path: "/support", icon: Building2, color: "green" },
+  { title: "母親向け面接対策", description: "暮らしと仕事の両立を応援", path: "/womens-health?category=interview_for_mothers", icon: HeartHandshake, color: "coral" },
+] as const;
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
-
   return (
-    <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">ココロナビ</h1>
-          <Button variant="ghost" onClick={() => navigate("/")}>
-            ホームに戻る
+    <div className="min-h-screen bg-background sacred-geometry-bg kokoro-shell">
+      <header className="sticky top-0 z-50">
+        <div className="kokoro-header">
+          <Button className="header-home" variant="ghost" aria-label="ホーム" onClick={() => navigate("/")}>
+            <House className="h-6 w-6" /><span>ホーム</span>
           </Button>
+          <div className="kokoro-logo"><Leaf className="h-9 w-9" /><h1>ココロナビ</h1></div>
+          <Leaf className="header-leaf h-9 w-9" aria-hidden="true" />
         </div>
       </header>
-
-      <main className="container py-12">
-        <div className="space-y-8">
-          <Card className="border-primary/30">
-            <CardContent className="pt-6 space-y-4">
-              <div>
-                <h2 className="text-xl font-bold text-primary mb-2">
-                  ココロナビについて
-                </h2>
-                <p className="text-sm leading-7 text-foreground/80">
-                  ココロナビは、女性の再就職や暮らしの不安に寄り添う総合サポートアプリです。
-                  面接の準備だけでなく、気持ちの整理、学び直し、信頼できる公的支援窓口探しまで、
-                  次の一歩を自分のペースで考えられるよう支援します。
-                </p>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3 text-sm">
-                <div className="rounded-md border border-border bg-muted/40 p-4">
-                  <h3 className="font-semibold text-primary mb-1">面接練習</h3>
-                  <p className="text-foreground/70">
-                    希望する職種に合わせた質問で、経験や強みの伝え方を練習できます。
-                  </p>
-                </div>
-                <div className="rounded-md border border-border bg-muted/40 p-4">
-                  <h3 className="font-semibold text-primary mb-1">気分チェック</h3>
-                  <p className="text-foreground/70">
-                    不安や緊張を言葉にし、AIから次の行動のヒントを受け取れます。
-                  </p>
-                </div>
-                <div className="rounded-md border border-border bg-muted/40 p-4">
-                  <h3 className="font-semibold text-primary mb-1">支援窓口案内</h3>
-                  <p className="text-foreground/70">
-                    東京都などの公的情報から、状況に合う相談先や学びの場を探せます。
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm font-medium text-primary">
-                ひとりで抱え込まず、できることから少しずつ始めていきましょう。
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Button className="h-auto py-6" onClick={() => navigate("/interview")}>
-              面接練習を始める
-            </Button>
-            <Button
-              className="h-auto py-6"
-              onClick={() => navigate("/mood")}
-              variant="outline"
-            >
-              気分をチェック
-            </Button>
-            <Button
-              className="h-auto py-6"
-              onClick={() => navigate("/support")}
-              variant="outline"
-            >
-              相談窓口を探す
-            </Button>
-            <Button
-              className="h-auto py-6"
-              onClick={() =>
-                navigate(
-                  "/womens-health?category=interview_for_mothers"
-                )
-              }
-              variant="outline"
-            >
-              母親向け面接対策
-            </Button>
-          </div>
-        </div>
+      <main className="kokoro-main">
+        <div className="hero-illustration" role="img" aria-label="湖畔の自然の中で穏やかに座る女性" />
+        <section className="about-paper">
+          <h2><Leaf className="h-7 w-7" />ココロナビについて</h2>
+          <p>ココロナビは、女性の再就職や暮らしの不安に寄り添う総合サポートアプリです。面接の準備だけでなく、気持ちの整理、学び直し、信頼できる公的支援窓口探しまで、次の一歩を自分のペースで考えられるよう支援します。</p>
+        </section>
+        <section className="feature-grid" aria-label="サポートメニュー">
+          {menuItems.map(item => {
+            const Icon = item.icon;
+            return <button key={item.path} className="feature-card" onClick={() => navigate(item.path)}>
+              <span className={`feature-icon feature-icon--${item.color}`}><Icon /></span>
+              <span className="feature-copy"><strong>{item.title}</strong><small>{item.description}</small></span>
+              <ArrowRight className="feature-arrow" />
+            </button>;
+          })}
+        </section>
+        <p className="closing-message"><Leaf />ひとりで抱え込まず、できることから少しずつ始めていきましょう。<Leaf /></p>
       </main>
     </div>
   );

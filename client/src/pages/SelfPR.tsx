@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Copy, ArrowLeft, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 import { toast } from "sonner";
 
 export default function SelfPR() {
@@ -52,21 +53,7 @@ export default function SelfPR() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/")}
-              aria-label="戻る"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-primary">自己PR作成支援</h1>
-          </div>
-        </div>
-      </header>
+      <KokoroHeader />
 
       <div className="container py-8 max-w-4xl">
         <div className="mb-8 text-center">

@@ -52,10 +52,10 @@
   --chart-3: oklch(0.31 0.07 165);
   --chart-4: oklch(0.43 0.09 165);
   --chart-5: oklch(0.55 0.08 165);
-  --radius: 0.45rem;
-  --background: oklch(0.965 0.012 92);
+  --radius: 1rem;
+  --background: oklch(0.972 0.018 91);
   --foreground: oklch(0.27 0.055 165);
-  --card: oklch(0.995 0.002 100);
+  --card: oklch(0.992 0.012 91);
   --card-foreground: oklch(0.27 0.055 165);
   --popover: oklch(0.995 0.002 100);
   --popover-foreground: oklch(0.27 0.055 165);
@@ -67,7 +67,7 @@
   --accent-foreground: oklch(0.99 0.005 100);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.79 0.022 165);
+  --border: oklch(0.83 0.025 82);
   --input: oklch(1 0 0);
   --ring: oklch(0.61 0.18 42);
   --sidebar: oklch(0.965 0.012 92);
@@ -120,6 +120,9 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Noto Sans JP", "Yu Gothic UI", sans-serif;
+    min-width: 320px;
+    background-image: repeating-linear-gradient(90deg, transparent 0 5px, rgba(117, 91, 55, 0.025) 6px 7px), linear-gradient(110deg, #f3ecdc 0%, #fbf7ec 45%, #eee4d1 100%);
+    background-attachment: fixed;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -179,8 +182,16 @@
 
 
 .sacred-geometry-bg {
-  background-color: var(--background);
+  background-color: transparent;
   position: relative;
+  width: min(calc(100% - 24px), 1440px);
+  min-height: calc(100vh - 24px);
+  margin: 12px auto;
+  overflow: hidden;
+  border: 1px solid rgba(91, 78, 54, 0.2);
+  border-radius: clamp(22px, 3vw, 38px);
+  box-shadow: 0 16px 48px rgba(69, 58, 37, 0.16);
+  background-image: linear-gradient(rgba(255, 253, 247, 0.86), rgba(250, 247, 236, 0.92)), repeating-linear-gradient(0deg, transparent 0 4px, rgba(96, 76, 44, 0.025) 5px 6px);
 }
 
 .sacred-geometry-bg::before {
@@ -230,9 +241,9 @@ button:active {
 @layer components {
   .min-h-screen > header,
   .min-h-screen > nav {
-    background-color: var(--primary) !important;
-    border-bottom: 3px solid color-mix(in oklch, var(--primary) 85%, black) !important;
-    box-shadow: none;
+    background: rgba(255, 252, 244, 0.92) !important;
+    border-bottom: 1px solid rgba(75, 105, 80, 0.24) !important;
+    box-shadow: 0 5px 18px rgba(66, 74, 51, 0.08);
     position: relative;
     z-index: 50;
   }
@@ -240,15 +251,16 @@ button:active {
   .min-h-screen > header h1,
   .min-h-screen > nav h1,
   .min-h-screen > nav > div > div:first-child {
-    color: var(--primary-foreground) !important;
+    color: var(--primary) !important;
   }
 
   .min-h-screen > header [data-slot="button"],
   .min-h-screen > nav [data-slot="button"] {
     position: relative;
     z-index: 60;
-    background-color: var(--accent);
-    color: var(--accent-foreground) !important;
+    background-color: rgba(111, 145, 95, 0.12);
+    color: var(--primary) !important;
+    border: 1px solid rgba(70, 102, 72, 0.2);
   }
 
   .min-h-screen > header [data-slot="button"]:hover,
@@ -257,17 +269,20 @@ button:active {
   }
 
   [data-slot="card"] {
-    border-color: var(--border);
-    box-shadow: 0 1px 3px color-mix(in oklch, var(--primary) 10%, transparent);
+    border-color: rgba(116, 101, 73, 0.23);
+    border-radius: 1.4rem;
+    background: rgba(255, 253, 247, 0.9);
+    box-shadow: 0 8px 20px rgba(68, 63, 43, 0.1), inset 0 1px rgba(255,255,255,.8);
   }
 
   [data-slot="button"][class*="bg-primary"] {
-    background-color: var(--accent);
-    color: var(--accent-foreground);
+    background: linear-gradient(135deg, #315f3e, #174c2d);
+    color: #fffdf5;
+    box-shadow: 0 7px 14px rgba(29, 75, 43, .2);
   }
 
   [data-slot="button"][class*="bg-primary"]:hover {
-    background-color: color-mix(in oklch, var(--accent) 86%, black);
+    background: linear-gradient(135deg, #3d7049, #1c5634);
   }
 
   input,
@@ -275,5 +290,107 @@ button:active {
   select {
     border-color: var(--border);
     background-color: var(--card);
+    border-radius: .85rem;
   }
+
+  [data-slot="button"] { border-radius: .9rem; font-weight: 700; }
+
+  .nature-tile {
+    min-height: 148px;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border: 1px solid rgba(105, 92, 65, .22) !important;
+    background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(247,244,230,.96)) !important;
+    color: var(--primary) !important;
+    box-shadow: 0 8px 16px rgba(66, 62, 40, .12);
+  }
+  .nature-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 22px rgba(66, 62, 40, .16); }
+}
+
+@media (max-width: 639px) {
+  .sacred-geometry-bg { width: 100%; margin: 0; min-height: 100vh; border: 0; border-radius: 0; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.65rem; }
+}
+
+/* Kokoronavi illustrated home */
+.kokoro-shell { max-width: 1120px; }
+.kokoro-header { height: 92px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 clamp(18px, 4vw, 52px); }
+.kokoro-logo { display: flex; align-items: center; gap: 14px; color: var(--primary); }
+.kokoro-logo h1 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: .04em; }
+.header-home { justify-self: start; flex-direction: column; height: 58px !important; min-width: 68px; gap: 2px; font-size: .72rem; }
+.header-leaf { justify-self: end; color: #78a95f; transform: rotate(-18deg); }
+.header-end { justify-self:end; display:flex; align-items:center; min-width:68px; justify-content:flex-end; }
+.kokoro-shared-header { background:rgba(255,252,244,.96) !important; border-bottom:1px solid rgba(75,105,80,.2) !important; box-shadow:0 5px 18px rgba(66,74,51,.08) !important; }
+.kokoro-main { padding-bottom: 30px; }
+.hero-illustration { width: 100%; aspect-ratio: 16 / 6.5; min-height: 300px; max-height: 490px; background: url('/images/kokoronavi-hero.png') center 48% / cover no-repeat; }
+.about-paper { position: relative; z-index: 2; width: calc(100% - clamp(32px, 8vw, 100px)); margin: clamp(-42px, -4vw, -28px) auto 24px; padding: clamp(24px, 3vw, 38px); border: 1px solid rgba(105,92,65,.24); border-radius: 28px; background: rgba(255,253,247,.95); box-shadow: 0 9px 22px rgba(66,62,40,.16); }
+.about-paper h2 { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; font-size: clamp(1.4rem, 2.8vw, 2rem); }
+.about-paper h2 svg { color: #7baa5d; }
+.about-paper p { font-size: clamp(.94rem, 1.5vw, 1.08rem); line-height: 2; }
+.feature-grid { width: calc(100% - clamp(32px, 8vw, 100px)); margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.feature-card { min-height: 180px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; padding: 24px; text-align: left; border: 1px solid rgba(105,92,65,.22); border-radius: 25px; color: var(--primary); background: linear-gradient(145deg,#fffefa,#f7f2e5); box-shadow: 0 7px 16px rgba(66,62,40,.14); }
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 13px 24px rgba(66,62,40,.18); }
+.feature-icon { width: 92px; height: 92px; display: grid; place-items: center; border-radius: 50% 45% 48% 42%; box-shadow: inset 0 -7px 0 rgba(48,72,40,.08); }
+.feature-icon svg { width: 48px; height: 48px; stroke-width: 1.8; }
+.feature-icon--orange { background:#f4bd82; color:#874d29; }
+.feature-icon--yellow { background:#f7d66e; color:#63591c; }
+.feature-icon--green { background:#a9cd8c; color:#315f42; }
+.feature-icon--coral { background:#f0aa91; color:#7d473e; }
+.feature-copy { display: flex; flex-direction: column; gap: 7px; }
+.feature-copy strong { font-size: clamp(1.2rem,2.2vw,1.7rem); }
+.feature-copy small { color: color-mix(in oklch,var(--foreground) 72%,white); font-size:.9rem; }
+.feature-arrow { color:#6d9974; }
+.closing-message { width: calc(100% - clamp(32px,8vw,100px)); margin: 28px auto 0; padding-top: 24px; border-top: 1px solid rgba(105,92,65,.2); display:flex; justify-content:center; align-items:center; gap:16px; text-align:center; font-size:1.05rem; }
+.closing-message svg { width:20px; color:#a4bf75; }
+
+@media (max-width: 700px) {
+  .kokoro-header { height: 72px; padding: 0 14px; }
+  .kokoro-logo h1 { font-size: 1.65rem; }
+  .kokoro-logo svg, .header-leaf { width: 25px; }
+  .header-home { min-width:44px; padding:6px !important; }
+  .header-home span, .header-leaf { display:none; }
+  .header-end { min-width:44px; }
+  .hero-illustration { min-height: 270px; aspect-ratio: 4 / 3; }
+  .about-paper { width:calc(100% - 28px); margin-top:-24px; border-radius:22px; }
+  .feature-grid { width:calc(100% - 28px); grid-template-columns:1fr; gap:12px; }
+  .feature-card { min-height:130px; padding:18px; gap:15px; border-radius:20px; }
+  .feature-icon { width:72px; height:72px; }
+  .feature-icon svg { width:38px; height:38px; }
+  .feature-copy small { display:none; }
+}
+
+/* Paper form pages on a warm wooden table */
+.sacred-geometry-bg:not(.kokoro-shell) {
+  background-color: #dcb984;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 82px, rgba(91,54,23,.16) 83px 86px, rgba(255,255,255,.1) 87px 89px),
+    repeating-linear-gradient(2deg, rgba(255,255,255,.035) 0 3px, rgba(117,70,31,.035) 4px 7px),
+    linear-gradient(90deg,#d7ad72,#edcb96 47%,#d4a86b);
+}
+.sacred-geometry-bg:not(.kokoro-shell)::before,
+.sacred-geometry-bg:not(.kokoro-shell)::after {
+  content:""; position:absolute; z-index:0; width:150px; height:190px; opacity:.23; pointer-events:none;
+  background: radial-gradient(ellipse at 30% 25%,#477843 0 12%,transparent 13%), radial-gradient(ellipse at 65% 40%,#6c934d 0 13%,transparent 14%), radial-gradient(ellipse at 32% 62%,#477843 0 11%,transparent 12%), linear-gradient(60deg,transparent 48%,#477843 49% 52%,transparent 53%);
+}
+.sacred-geometry-bg:not(.kokoro-shell)::before { left:-28px; top:230px; transform:rotate(-20deg); }
+.sacred-geometry-bg:not(.kokoro-shell)::after { right:-22px; bottom:28px; transform:rotate(155deg); }
+.sacred-geometry-bg:not(.kokoro-shell) > header { background:rgba(255,250,238,.92) !important; }
+.sacred-geometry-bg:not(.kokoro-shell) > .container,
+.sacred-geometry-bg:not(.kokoro-shell) > main.container { position:relative; z-index:1; padding-top:clamp(40px,7vw,90px); padding-bottom:clamp(55px,9vw,110px); }
+.sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] { background-color:#fffaf0; background-image:radial-gradient(rgba(112,82,45,.045) .8px,transparent .9px); background-size:5px 5px; border-color:rgba(93,68,39,.23); box-shadow:0 14px 28px rgba(76,47,20,.2); }
+.sacred-geometry-bg:not(.kokoro-shell) [data-slot="card-header"] { padding:10px clamp(24px,5vw,52px) 22px; text-align:center; }
+.sacred-geometry-bg:not(.kokoro-shell) [data-slot="card-title"] { width:100%; padding-bottom:22px; border-bottom:2px solid rgba(112,75,43,.18); font-size:clamp(1.5rem,3vw,2.25rem); color:var(--primary); }
+.sacred-geometry-bg:not(.kokoro-shell) [data-slot="card-content"] { padding-left:clamp(24px,5vw,52px); padding-right:clamp(24px,5vw,52px); }
+.sacred-geometry-bg:not(.kokoro-shell) label { font-size:1rem !important; font-weight:700 !important; color:#503018; }
+.sacred-geometry-bg:not(.kokoro-shell) input,
+.sacred-geometry-bg:not(.kokoro-shell) textarea,
+.sacred-geometry-bg:not(.kokoro-shell) select { min-height:58px; padding:14px 18px; font-size:1rem; background:rgba(255,255,255,.8); border-color:rgba(101,75,48,.22); box-shadow:inset 0 2px 6px rgba(73,55,34,.06),0 3px 8px rgba(73,55,34,.08); }
+.sacred-geometry-bg:not(.kokoro-shell) textarea { min-height:150px; }
+.sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] [data-slot="button"][class*="bg-primary"] { min-height:58px; font-size:1.1rem; }
+
+@media (max-width:639px) {
+  .sacred-geometry-bg:not(.kokoro-shell) > .container,
+  .sacred-geometry-bg:not(.kokoro-shell) > main.container { padding-top:30px; }
+  .sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] { border-radius:22px; }
 }

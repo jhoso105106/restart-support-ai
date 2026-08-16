@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 import { toast } from "sonner";
 
 type InterviewQuestion = {
@@ -175,18 +176,7 @@ export default function Interview() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary">AI面接練習</h1>
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-          >
-            ホームに戻る
-          </Button>
-        </div>
-      </header>
+      <KokoroHeader />
 
       <div className="container py-12" key={step}>
         {step === "setup" && (

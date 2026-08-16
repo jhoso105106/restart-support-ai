@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 
 const CAREER_CATEGORIES = [
   { value: "child_rearing", label: "育児との両立支援" },
@@ -144,21 +145,7 @@ export default function WomensHealth() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container flex min-h-16 items-center justify-between gap-2 py-3">
-          <h1 className="min-w-0 text-lg font-bold leading-tight text-primary sm:text-2xl">
-            女性向けAIキャリア支援
-          </h1>
-          <div className="flex shrink-0 gap-1 sm:gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/history")}>
-              履歴
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-              ホームに戻る
-            </Button>
-          </div>
-        </div>
-      </header>
+      <KokoroHeader><Button variant="outline" size="sm" onClick={() => navigate("/history")}>履歴</Button></KokoroHeader>
 
       <main className="container py-8 sm:py-12">
         <div className="mx-auto max-w-3xl space-y-8">

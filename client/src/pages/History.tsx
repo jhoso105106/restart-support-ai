@@ -4,6 +4,7 @@ import { getHistory, type HistoryItem, type HistoryType } from "@/lib/history-ap
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import KokoroHeader from "@/components/KokoroHeader";
 
 type Filter = HistoryType | "all";
 
@@ -106,15 +107,7 @@ export default function History() {
 
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-sm">
-        <div className="container flex min-h-16 items-center justify-between gap-3 py-2">
-          <h1 className="text-xl font-bold text-primary sm:text-2xl">履歴</h1>
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            ココロナビへ
-          </Button>
-        </div>
-      </header>
+      <KokoroHeader />
 
       <main className="container py-8 sm:py-12">
         <div className="mx-auto max-w-3xl space-y-6">
