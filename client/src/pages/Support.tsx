@@ -69,7 +69,7 @@ const isSupportResource = (value: unknown): value is SupportResource => {
 export default function Support() {
   const [location, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("employment");
-  const [selectedRegion, setSelectedRegion] = useState("全国");
+  const [selectedRegion, setSelectedRegion] = useState("東京都全域");
   const [selectedAge, setSelectedAge] = useState("全年齢");
   const [resources, setResources] = useState<SupportResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,7 +160,7 @@ export default function Support() {
             {/* Tokyo Open Data banner */}
             <div className="mb-6 p-4 rounded-md bg-green-600 text-white shadow-sm">
               <p className="font-bold text-base md:text-lg">東京都オープンデータ活用</p>
-              <p className="text-sm md:text-base mt-1">このアプリは東京都オープンデータカタログサイトの公的データ（例：東京しごとセンター、東京都立職業能力開発センター、東京都立中部総合精神保健福祉センター）を活用して、支援窓口を案内しています。データは各カードでデータセットID・更新日・出典リンクとともに確認できます。</p>
+              <p className="text-sm md:text-base mt-1">東京都福祉局「社会福祉施設等一覧（令和7年10月1日時点）」の公式CSVを活用しています。各カードでデータセットID・リソースID・更新日・原典CSVを確認できます。</p>
             </div>
             {/* Filters */}
         <Card className="mb-8">
