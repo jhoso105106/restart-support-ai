@@ -260,7 +260,15 @@ export default function Support() {
                 <CardContent className="pt-6">
                   <div className="mb-3 flex items-center justify-between"><span className="rounded-full bg-green-700 px-3 py-1 text-sm font-bold text-white">おすすめ {index + 1}</span><span className="text-sm font-bold text-green-800">適合度 {item.score}点</span></div>
                   <h3 className="mb-3 text-lg font-bold">{item.resource.name}</h3>
-                  <ul className="mb-5 space-y-2 text-sm text-foreground/75">{item.reasons.map(reason => <li key={reason}>✓ {reason}</li>)}</ul>
+                  <div className="mb-4 rounded-xl bg-green-50/80 p-3">
+                    <p className="mb-2 text-xs font-bold text-green-900">推薦理由</p>
+                    <ul className="space-y-2 text-sm text-foreground/75">{item.reasons.map(reason => <li key={reason}>✓ {reason}</li>)}</ul>
+                  </div>
+                  <div className="mb-5 space-y-1 border-t border-green-900/15 pt-3 text-xs text-foreground/70">
+                    <p><span className="font-bold">出典：</span>{item.resource.sourceName}</p>
+                    <p><span className="font-bold">データ更新日：</span>{item.resource.lastUpdated || "原典で確認"}</p>
+                    <a className="inline-flex items-center gap-1 font-bold text-green-900 underline" href={item.resource.portalUrl ?? item.resource.sourceUrl} target="_blank" rel="noopener noreferrer">公式データを確認する<ExternalLink className="h-3 w-3" /></a>
+                  </div>
                   <Button
                     className="w-full"
                     variant="outline"
@@ -274,10 +282,6 @@ export default function Support() {
                       {item.resource.description && <p>{item.resource.description}</p>}
                       {item.resource.address && <div className="flex gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-green-800" /><span>{item.resource.address}</span></div>}
                       {item.resource.phone && <div className="flex gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-green-800" /><a className="font-bold text-green-900 underline" href={`tel:${item.resource.phone}`}>{item.resource.phone}</a></div>}
-                      <div className="border-t border-green-900/15 pt-3 text-xs text-foreground/70">
-                        <p>データ更新日：{item.resource.lastUpdated}</p>
-                        <a className="mt-2 inline-flex items-center gap-1 font-bold text-green-900 underline" href={item.resource.portalUrl ?? item.resource.sourceUrl} target="_blank" rel="noopener noreferrer">東京都オープンデータの出典を見る<ExternalLink className="h-3 w-3" /></a>
-                      </div>
                     </div>
                   )}
                 </CardContent>

@@ -17,6 +17,7 @@ type MedicalInstitution = {
   sourceUrl: string;
   datasetId: string;
   resourceId: string;
+  dataAsOf: string;
 };
 
 export default function MedicalSupport() {
@@ -74,7 +75,11 @@ export default function MedicalSupport() {
                   <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold">{item.name}</h2><p className="mt-1 text-sm text-foreground/65">{item.facilityType}・{item.area}</p></div><span className="rounded-full bg-green-700 px-3 py-1 text-xs font-bold text-white">公的オープンデータ</span></div>
                   <p className="rounded-lg bg-green-50 p-3 text-sm"><strong>診療科：</strong>{item.departments}</p>
                   <div className="grid gap-3 text-sm md:grid-cols-2"><div className="flex gap-2"><MapPin className="h-4 w-4 shrink-0 text-green-800" />{item.address}</div>{item.phone && <div className="flex gap-2"><Phone className="h-4 w-4 shrink-0 text-green-800" /><a className="font-bold underline" href={`tel:${item.phone.split("・")[0]}`}>{item.phone}</a></div>}</div>
-                  <div className="flex flex-wrap gap-4 border-t pt-4 text-xs">{item.url && <a className="font-bold text-green-900 underline" href={item.url} target="_blank" rel="noopener noreferrer">医療機関の公式サイト <ExternalLink className="inline h-3 w-3" /></a>}<a className="text-green-900 underline" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">原典オープンデータ <ExternalLink className="inline h-3 w-3" /></a><span>データセット：{item.datasetId}</span></div>
+                  <div className="space-y-2 border-t pt-4 text-xs text-foreground/70">
+                    <p><span className="font-bold">出典：</span>{item.sourceName}</p>
+                    <p><span className="font-bold">データ基準日：</span>{item.dataAsOf}</p>
+                    <div className="flex flex-wrap gap-4">{item.url && <a className="font-bold text-green-900 underline" href={item.url} target="_blank" rel="noopener noreferrer">医療機関の公式サイト <ExternalLink className="inline h-3 w-3" /></a>}<a className="font-bold text-green-900 underline" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">原典オープンデータ <ExternalLink className="inline h-3 w-3" /></a></div>
+                  </div>
                 </CardContent>
               </Card>)}
               {limit < results.length && <Button className="w-full" variant="outline" onClick={() => setLimit(value => value + 20)}>さらに20件表示</Button>}
