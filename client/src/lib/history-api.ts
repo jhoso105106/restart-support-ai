@@ -104,6 +104,14 @@ export const saveMoodHistory = async (mood: number, comment: string) =>
     body: JSON.stringify({ type: "mood", mood, comment }),
   });
 
+export const saveInterviewHistory = async (
+  items: Array<{ question: string; answer: string; score?: number | null }>
+) =>
+  requestHistory<{ success: true; count: number }>("/api/history", {
+    method: "POST",
+    body: JSON.stringify({ type: "interview", items }),
+  });
+
 export const saveCounselingHistory = async (
   consultation: string,
   advice: string

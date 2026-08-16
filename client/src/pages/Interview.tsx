@@ -9,6 +9,7 @@ import { Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
 import { toast } from "sonner";
+import { saveInterviewHistory } from "@/lib/history-api";
 
 type InterviewQuestion = {
   id: number;
@@ -50,7 +51,6 @@ export default function Interview() {
   const [loading, setLoading] = useState(false);
 
   const generateFeedbackMutation = trpc.interview.generateFeedback.useMutation();
-  const saveSessionMutation = trpc.interview.saveSession.useMutation();
 
   const handleGenerateQuestions = async () => {
     if (!jobTitle.trim()) {
@@ -149,26 +149,32 @@ export default function Interview() {
   };
 
   const handleSaveSession = async () => {
+    const currentQuestion = questions[currentQuestionIndex];
+    if (!currentQuestion || !answer.trim()) {
+      toast.error("保存する回答がありません");
+      return;
+    }
+
     setLoading(true);
     try {
-      const result = await saveSessionMutation.mutateAsync({
-        jobTitle,
-        jobDescription: jobDescription || undefined,
-        questions: JSON.stringify(questions),
-        answers: JSON.stringify(
-          questions.map((_, i) => (i === currentQuestionIndex ? answer : ""))
-        ),
-        feedback: JSON.stringify(feedback),
-      });
+      const scores = [
+        feedback?.specificity?.score,
+        feedback?.strengthCommunication?.score,
+        feedback?.ageAdvantage?.score,
+      ].filter((score): score is number => typeof score === "number");
+      const score = scores.length
+        ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length)
+        : null;
 
-      if (result.success) {
-        toast.success("セッションを保存しました");
-        navigate("/dashboard");
-      } else {
-        toast.error(result.error || "セッションの保存に失敗しました");
-      }
+      await saveInterviewHistory([{
+        question: currentQuestion.question,
+        answer: answer.trim(),
+        score,
+      }]);
+      toast.success("セッションを保存しました");
+      navigate("/history");
     } catch (error) {
-      toast.error("エラーが発生しました");
+      toast.error(error instanceof Error ? error.message : "セッションの保存に失敗しました");
     } finally {
       setLoading(false);
     }
