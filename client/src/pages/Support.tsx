@@ -166,7 +166,12 @@ export default function Support() {
       </header>
 
       <div className="container py-12">
-        {/* Filters */}
+            {/* Tokyo Open Data banner */}
+            <div className="mb-6 p-4 rounded-md bg-green-600 text-white shadow-sm">
+              <p className="font-bold text-base md:text-lg">東京都オープンデータ活用</p>
+              <p className="text-sm md:text-base mt-1">このアプリは東京都オープンデータカタログサイトの公的データ（例：東京しごとセンター、東京都立職業能力開発センター、東京都立中部総合精神保健福祉センター）を活用して、支援窓口を案内しています。データは各カードでデータセットID・更新日・出典リンクとともに確認できます。</p>
+            </div>
+            {/* Filters */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>支援窓口を探す</CardTitle>
@@ -282,9 +287,9 @@ export default function Support() {
                         </h3>
                         {/* Tokyo open data badge if sourceType === 'tokyo' */}
                         {resource.sourceType === 'tokyo' ? (
-                          <span className="text-xs font-semibold bg-green-50 text-green-800 px-2 py-1 rounded-md">東京都オープンデータ</span>
+                          <span className="text-sm font-semibold bg-green-600 text-white px-3 py-1 rounded-full shadow-sm">東京都オープンデータ</span>
                         ) : (
-                          <span className="text-xs font-medium bg-muted px-2 py-1 rounded-md text-foreground/70">{resource.sourceType || resource.sourceName}</span>
+                          <span className="text-sm font-medium bg-muted px-2 py-1 rounded-md text-foreground/70">{resource.sourceType || resource.sourceName}</span>
                         )}
                       </div>
 
@@ -363,12 +368,12 @@ export default function Support() {
                     )}
 
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-foreground/60">
+                      <div className="text-sm text-foreground/80 space-y-1">
                         {resource.datasetId && (
-                          <div>データセット: <span className="font-medium">{resource.datasetId}</span></div>
+                          <div>データセット: <span className="font-medium text-foreground">{resource.datasetId}</span></div>
                         )}
                         {resource.lastUpdated && (
-                          <div>更新: <span className="font-medium">{resource.lastUpdated}</span></div>
+                          <div>最終更新: <span className="font-medium text-foreground">{resource.lastUpdated}</span></div>
                         )}
                       </div>
 
