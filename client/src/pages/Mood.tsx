@@ -146,7 +146,7 @@ export default function Mood() {
       case "consult_window":
         // Navigate to support with a recommended highlight and reason for demo clarity
         // Use a sensible default recommended resource id present in our static data
-        navigate(`/support?highlight=${encodeURIComponent("tokyo-mental-health-welfare-center")}&reason=${encodeURIComponent("あなたの相談内容に基づき、この窓口をおすすめしています")}`);
+        navigate(`/support?highlight=${encodeURIComponent("tokyo-central-mental-health-center")}&reason=${encodeURIComponent("あなたの相談内容に基づき、この窓口をおすすめしています")}`);
         break;
       case "community_activity":
         navigate("/support?category=community");

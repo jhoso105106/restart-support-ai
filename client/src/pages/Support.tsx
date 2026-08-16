@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, MapPin, Phone, Globe, Clock, ExternalLink } from "lucide-react";
+import { Loader2, MapPin, Phone, Globe, Clock, ExternalLink, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
 
@@ -33,6 +33,52 @@ type SupportResource = {
   lastUpdated?: string;
   portalUrl?: string;
 };
+
+type ConsultationMethod = "any" | "phone" | "visit";
+type Recommendation = { resource: SupportResource; score: number; reasons: string[] };
+
+const NEED_OPTIONS = [
+  { value: "employment", label: "再就職や仕事探し" },
+  { value: "reskilling", label: "資格・研修・学び直し" },
+  { value: "mental", label: "不安や気持ちの不調" },
+  { value: "community", label: "生活の悩み・地域とのつながり" },
+] as const;
+
+const rankResources = (
+  resources: SupportResource[],
+  region: string,
+  need: string,
+  method: ConsultationMethod
+): Recommendation[] =>
+  resources
+    .map(resource => {
+      let score = 0;
+      const reasons: string[] = [];
+      if (resource.category === need) {
+        score += 60;
+        reasons.push(`${NEED_OPTIONS.find(option => option.value === need)?.label ?? "お悩み"}に対応しています`);
+      }
+      if (resource.region.includes(region) && region !== "東京都全域") {
+        score += 30;
+        reasons.push(`${region}にある窓口です`);
+      } else if (resource.region.includes("東京都全域")) {
+        score += 12;
+        reasons.push("東京都内から利用できる窓口です");
+      }
+      if (method === "phone" && resource.phone) {
+        score += 15;
+        reasons.push("電話で問い合わせできます");
+      }
+      if (method === "visit" && resource.address && !resource.address.includes("非公開")) {
+        score += 15;
+        reasons.push("所在地が公開されており対面相談を検討できます");
+      }
+      if (method === "any") score += 5;
+      return { resource, score, reasons };
+    })
+    .filter(item => item.resource.category === need)
+    .sort((left, right) => right.score - left.score || left.resource.name.localeCompare(right.resource.name, "ja"))
+    .slice(0, 3);
 
 const isOptionalString = (value: unknown): value is string | null | undefined =>
   value === undefined || value === null || typeof value === "string";
@@ -74,6 +120,10 @@ export default function Support() {
   const [resources, setResources] = useState<SupportResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [diagnosisRegion, setDiagnosisRegion] = useState("東京都全域");
+  const [diagnosisNeed, setDiagnosisNeed] = useState("employment");
+  const [diagnosisMethod, setDiagnosisMethod] = useState<ConsultationMethod>("any");
+  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
 
   // Highlighting when navigated from AI (e.g., /support?highlight=tokyo-mental-health-welfare-center&reason=...)
   const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -152,6 +202,14 @@ export default function Support() {
       .filter(region => region !== "全国"),
   ];
 
+  const runDiagnosis = () => {
+    const ranked = rankResources(resources, diagnosisRegion, diagnosisNeed, diagnosisMethod);
+    setRecommendations(ranked);
+    setSelectedCategory(diagnosisNeed);
+    setSelectedRegion(diagnosisRegion);
+    window.setTimeout(() => document.getElementById("recommendation-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  };
+
   return (
     <div className="min-h-screen bg-background sacred-geometry-bg">
       <KokoroHeader />
@@ -162,6 +220,52 @@ export default function Support() {
               <p className="font-bold text-base md:text-lg">東京都オープンデータ活用</p>
               <p className="text-sm md:text-base mt-1">東京都福祉局「社会福祉施設等一覧（令和7年10月1日時点）」の公式CSVを活用しています。各カードでデータセットID・リソースID・更新日・原典CSVを確認できます。</p>
             </div>
+        <Card className="mb-8 border-green-700/30">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-3"><Sparkles className="h-6 w-6 text-green-700" />3分でわかる かんたん支援診断</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <p className="text-center text-foreground/75">3つの質問から、東京都の公式データにある支援窓口をおすすめ順にご案内します。</p>
+            <div className="grid gap-5 md:grid-cols-3">
+              <div>
+                <label htmlFor="diagnosis-region" className="mb-2 block">お住まい・利用したい地域</label>
+                <select id="diagnosis-region" value={diagnosisRegion} onChange={event => setDiagnosisRegion(event.target.value)} className="w-full border px-3">
+                  {regions.filter(region => region !== "全国").map(region => <option key={region}>{region}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="diagnosis-need" className="mb-2 block">今、一番困っていること</label>
+                <select id="diagnosis-need" value={diagnosisNeed} onChange={event => setDiagnosisNeed(event.target.value)} className="w-full border px-3">
+                  {NEED_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="diagnosis-method" className="mb-2 block">希望する相談方法</label>
+                <select id="diagnosis-method" value={diagnosisMethod} onChange={event => setDiagnosisMethod(event.target.value as ConsultationMethod)} className="w-full border px-3">
+                  <option value="any">どちらでもよい</option><option value="phone">電話で相談したい</option><option value="visit">対面で相談したい</option>
+                </select>
+              </div>
+            </div>
+            <Button className="w-full" size="lg" onClick={runDiagnosis} disabled={isLoading || loadError}><Sparkles />おすすめの窓口を診断する</Button>
+          </CardContent>
+        </Card>
+
+        {recommendations && (
+          <section id="recommendation-results" className="mb-10 scroll-mt-28">
+            <h2 className="mb-4 text-center text-2xl font-bold">あなたへのおすすめ</h2>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {recommendations.map((item, index) => <Card key={item.resource.id} className="border-green-700/30">
+                <CardContent className="pt-6">
+                  <div className="mb-3 flex items-center justify-between"><span className="rounded-full bg-green-700 px-3 py-1 text-sm font-bold text-white">おすすめ {index + 1}</span><span className="text-sm font-bold text-green-800">適合度 {item.score}点</span></div>
+                  <h3 className="mb-3 text-lg font-bold">{item.resource.name}</h3>
+                  <ul className="mb-5 space-y-2 text-sm text-foreground/75">{item.reasons.map(reason => <li key={reason}>✓ {reason}</li>)}</ul>
+                  <Button className="w-full" variant="outline" onClick={() => document.getElementById(`resource-${item.resource.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}>詳しい情報を見る</Button>
+                </CardContent>
+              </Card>)}
+            </div>
+          </section>
+        )}
+
             {/* Filters */}
         <Card className="mb-8">
           <CardHeader>
