@@ -121,5 +121,50 @@
     "datasetId": "mhlw-hellotraining-2024",
     "lastUpdated": "2024-02-01",
     "portalUrl": "https://www.mhlw.go.jp/"
+  },
+  {
+    "id": "tokyo-kominkan",
+    "name": "公民館（都）",
+    "category": "community",
+    "region": ["東京都全域"],
+    "description": "地域活動や講座で使える公民館の一覧データ（東京都オープンデータ）です。",
+    "website": "",
+    "targetAge": ["全年齢"],
+    "sourceName": "東京都オープンデータカタログ",
+    "sourceUrl": "https://www.opendata.metro.tokyo.lg.jp/kyouiku/R3/skshubetu_1.csv",
+    "sourceType": "tokyo",
+    "datasetId": "kyouiku-skshubetu_1",
+    "lastUpdated": "2026-01-30",
+    "portalUrl": "https://www.opendata.metro.tokyo.lg.jp/kyouiku/R3/skshubetu_1.csv"
+  },
+  {
+    "id": "tokyo-jidoukan",
+    "name": "児童館（都/区データ）",
+    "category": "community",
+    "region": ["東京都全域"],
+    "description": "児童館の施設一覧（区市町村提供CSV）を参照したデータ。子育て支援や地域交流に活用できます。",
+    "website": "",
+    "targetAge": ["乳幼児・子育て層"],
+    "sourceName": "各区市町村公開データ（東京都オープンデータカタログ経由）",
+    "sourceUrl": "https://www.city.bunkyo.lg.jp/documents/6059/zidokan.csv",
+    "sourceType": "tokyo",
+    "datasetId": "t131059d0213040002",
+    "lastUpdated": "2026-01-30",
+    "portalUrl": "https://www.city.bunkyo.lg.jp/documents/6059/zidokan.csv"
+  },
+  {
+    "id": "tokyo-social-welfare-hall",
+    "name": "社会福祉会館（区一覧サンプル）",
+    "category": "community",
+    "region": ["東京都全域"],
+    "description": "地域福祉やボランティア活動で使える社会福祉会館の一覧データ（区のオープンデータ）。",
+    "website": "",
+    "targetAge": ["全年齢"],
+    "sourceName": "区市町村オープンデータ（例：中野区）",
+    "sourceUrl": "https://www2.wagmap.jp/nakanodatamap/nakanodatamap/opendatafile/map_21/CSV/opendata_5000422.csv",
+    "sourceType": "tokyo",
+    "datasetId": "opendata-5000422",
+    "lastUpdated": "2026-01-01",
+    "portalUrl": "https://www2.wagmap.jp/nakanodatamap/nakanodatamap/opendatafile/map_21/CSV/opendata_5000422.csv"
   }
 ]
