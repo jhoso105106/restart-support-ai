@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building2, HeartHandshake, House, Leaf, MessageCircleHeart, Mic2 } from "lucide-react";
+import { ArrowRight, Building2, HeartHandshake, Hospital, House, Leaf, MessageCircleHeart, Mic2 } from "lucide-react";
 import { useLocation } from "wouter";
 
 const menuItems = [
@@ -7,6 +7,7 @@ const menuItems = [
   { title: "気分チェック", description: "今の気持ちをゆっくり整理", path: "/mood", icon: MessageCircleHeart, color: "yellow" },
   { title: "相談窓口を探す", description: "あなたに合う公的な相談先へ", path: "/support", icon: Building2, color: "green" },
   { title: "母親向け面接対策", description: "暮らしと仕事の両立を応援", path: "/womens-health?category=interview_for_mothers", icon: HeartHandshake, color: "coral" },
+  { title: "精神科・心療内科を探す", description: "東京都の公式データから医療機関を検索", path: "/medical-support", icon: Hospital, color: "blue" },
 ] as const;
 
 export default function Dashboard() {
@@ -31,7 +32,7 @@ export default function Dashboard() {
         <section className="feature-grid" aria-label="サポートメニュー">
           {menuItems.map(item => {
             const Icon = item.icon;
-            return <button key={item.path} className="feature-card" onClick={() => navigate(item.path)}>
+            return <button key={item.path} className={`feature-card${item.path === "/medical-support" ? " feature-card--wide" : ""}`} onClick={() => navigate(item.path)}>
               <span className={`feature-icon feature-icon--${item.color}`}><Icon /></span>
               <span className="feature-copy"><strong>{item.title}</strong><small>{item.description}</small></span>
               <ArrowRight className="feature-arrow" />

@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Heart, MessageSquare, Users } from "lucide-react";
+import { ArrowRight, Heart, Hospital, MessageSquare, Users } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 
@@ -138,6 +138,20 @@ export default function Home() {
                   }
                 >
                   母親向けの面接質問へ
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow md:col-span-3">
+              <CardHeader>
+                <Hospital className="w-8 h-8 text-accent mb-2" />
+                <CardTitle>精神科・心療内科を探す</CardTitle>
+                <CardDescription>東京都の公式オープンデータから医療機関を検索</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline" onClick={() => navigate("/medical-support")}>
+                  精神科・心療内科を探す
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>

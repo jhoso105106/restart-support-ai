@@ -337,6 +337,8 @@ button:active {
 .feature-icon--yellow { background:#f7d66e; color:#63591c; }
 .feature-icon--green { background:#a9cd8c; color:#315f42; }
 .feature-icon--coral { background:#f0aa91; color:#7d473e; }
+.feature-icon--blue { background:#b9dce2; color:#245865; }
+.feature-card--wide { grid-column:1 / -1; }
 .feature-copy { display: flex; flex-direction: column; gap: 7px; }
 .feature-copy strong { font-size: clamp(1.2rem,2.2vw,1.7rem); }
 .feature-copy small { color: color-mix(in oklch,var(--foreground) 72%,white); font-size:.9rem; }
