@@ -1,31 +1,40 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { inflateRawSync } from "node:zlib";
 
-const sources = [
-  {
-    area: "都立病院",
-    datasetId: "096d4841-973d-4982-9a82-257ea99f26c8",
-    resourceId: "3c8ff46f-a2a7-41df-8887-83ddb15b7174",
-    url: "https://data.storage.data.metro.tokyo.lg.jp/hokeniryou/130001_hospital.csv",
-    encoding: "utf-8",
-    addressKey: "所在地_連結表記",
-  },
-  {
-    area: "中央区",
-    datasetId: "01f90d55-38e7-42b9-9265-3023d7d672a2",
-    resourceId: "b0e32fbd-8d5e-4ecd-8d9e-764c75fec939",
-    url: "https://www.city.chuo.lg.jp/documents/984/iryoukikan.csv",
-    encoding: "shift_jis",
-    addressKey: "所在地_連結表記",
-  },
-  {
-    area: "中野区",
-    datasetId: "90ede8b4-0358-4028-9a18-5c51ce07bf00",
-    resourceId: "baa42ac7-2adc-49be-aaf7-9a1ad9998746",
-    url: "https://www2.wagmap.jp/nakanodatamap/nakanodatamap/opendatafile/map_47/CSV/opendata_550030.csv",
-    encoding: "utf-8",
-    addressKey: "住所",
-  },
+const publishedAt = "2026-06-01";
+const sourcePage = "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iryou/newpage_43373.html";
+const files = [
+  { type: "病院", kind: "facility", url: "https://www.mhlw.go.jp/content/11121000/01-1_hospital_facility_info_20260601.csv.zip" },
+  { type: "病院", kind: "speciality", url: "https://www.mhlw.go.jp/content/11121000/01-2_hospital_speciality_hours_20260601.csv.zip" },
+  { type: "診療所", kind: "facility", url: "https://www.mhlw.go.jp/content/11121000/02-1_clinic_facility_info_20260601.csv.zip" },
+  { type: "診療所", kind: "speciality", url: "https://www.mhlw.go.jp/content/11121000/02-2_clinic_speciality_hours_20260601.csv.zip" },
 ];
+
+const wards = new Map([
+  ["101", "千代田区"], ["102", "中央区"], ["103", "港区"], ["104", "新宿区"], ["105", "文京区"],
+  ["106", "台東区"], ["107", "墨田区"], ["108", "江東区"], ["109", "品川区"], ["110", "目黒区"],
+  ["111", "大田区"], ["112", "世田谷区"], ["113", "渋谷区"], ["114", "中野区"], ["115", "杉並区"],
+  ["116", "豊島区"], ["117", "北区"], ["118", "荒川区"], ["119", "板橋区"], ["120", "練馬区"],
+  ["121", "足立区"], ["122", "葛飾区"], ["123", "江戸川区"],
+]);
+
+const extractFirstZipEntry = zip => {
+  let eocd = zip.length - 22;
+  while (eocd >= 0 && zip.readUInt32LE(eocd) !== 0x06054b50) eocd -= 1;
+  if (eocd < 0) throw new Error("ZIP central directory not found");
+  const centralOffset = zip.readUInt32LE(eocd + 16);
+  if (zip.readUInt32LE(centralOffset) !== 0x02014b50) throw new Error("Invalid ZIP central directory");
+  const method = zip.readUInt16LE(centralOffset + 10);
+  const compressedSize = zip.readUInt32LE(centralOffset + 20);
+  const localOffset = zip.readUInt32LE(centralOffset + 42);
+  const nameLength = zip.readUInt16LE(localOffset + 26);
+  const extraLength = zip.readUInt16LE(localOffset + 28);
+  const start = localOffset + 30 + nameLength + extraLength;
+  const compressed = zip.subarray(start, start + compressedSize);
+  if (method === 0) return compressed;
+  if (method === 8) return inflateRawSync(compressed);
+  throw new Error(`Unsupported ZIP compression method: ${method}`);
+};
 
 const parseCsv = text => {
   const rows = [];
@@ -48,42 +57,53 @@ const parseCsv = text => {
   return rows.map(cells => Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""])));
 };
 
-const cleanPhone = phone => phone.trim().replace(/^代表/, "");
-const getCity = (row, source) => row["所在地_市区町村"] || row["市区町村名"] || source.area;
+const loaded = [];
+for (const file of files) {
+  const response = await fetch(file.url);
+  if (!response.ok) throw new Error(`${file.url}: HTTP ${response.status}`);
+  const csv = new TextDecoder("utf-8").decode(extractFirstZipEntry(Buffer.from(await response.arrayBuffer())));
+  loaded.push({ ...file, rows: parseCsv(csv) });
+}
 
 const records = [];
-for (const source of sources) {
-  const response = await fetch(source.url);
-  if (!response.ok) throw new Error(`${source.url}: HTTP ${response.status}`);
-  const text = new TextDecoder(source.encoding).decode(await response.arrayBuffer());
-  const rows = parseCsv(text).filter(row => /精神科|心療内科|神経精神科/.test(row["診療科目"] ?? ""));
-  for (const [index, row] of rows.entries()) {
-    const city = getCity(row, source);
-    const rawAddress = row[source.addressKey] ?? "";
-    const address = source.area === "中野区" ? `東京都中野区${rawAddress}` : rawAddress;
+for (const facilityFile of loaded.filter(file => file.kind === "facility")) {
+  const specialityFile = loaded.find(file => file.kind === "speciality" && file.type === facilityFile.type);
+  const departmentsById = new Map();
+  for (const row of specialityFile.rows) {
+    if (!/精神|心療内科/.test(row["診療科目名"] ?? "")) continue;
+    if (!departmentsById.has(row.ID)) departmentsById.set(row.ID, new Set());
+    departmentsById.get(row.ID).add(row["診療科目名"]);
+  }
+
+  for (const row of facilityFile.rows) {
+    const area = row["都道府県コード"] === "13" ? wards.get(row["市区町村コード"]) : undefined;
+    const departments = departmentsById.get(row.ID);
+    if (!area || !departments) continue;
     records.push({
-      id: `${source.area}-${index + 1}`,
-      name: row["名称"],
-      facilityType: row["医療機関の種類"] || "医療機関",
-      area: city,
-      address,
-      phone: cleanPhone(row["電話番号"] ?? ""),
-      departments: row["診療科目"],
-      url: row["URL"] || null,
-      latitude: Number(row["緯度"]) || null,
-      longitude: Number(row["経度"]) || null,
-      sourceName: `${source.area} 医療機関オープンデータ`,
-      sourceUrl: source.url,
-      datasetId: source.datasetId,
-      resourceId: source.resourceId,
+      id: `mhlw-${row.ID}`,
+      name: row["正式名称"],
+      facilityType: facilityFile.type,
+      area,
+      address: row["所在地"],
+      phone: "",
+      departments: [...departments].sort((a, b) => a.localeCompare(b, "ja")).join("、"),
+      url: row["案内用ホームページアドレス"] || null,
+      latitude: Number(row["所在地座標（緯度）"]) || null,
+      longitude: Number(row["所在地座標（経度）"]) || null,
+      sourceName: "厚生労働省 医療情報ネット オープンデータ",
+      sourceUrl: sourcePage,
+      datasetId: "mhlw-medical-information-network-20260601",
+      resourceId: facilityFile.url.split("/").at(-1),
+      dataAsOf: publishedAt,
     });
   }
 }
 
+records.sort((a, b) => a.area.localeCompare(b.area, "ja") || a.name.localeCompare(b.name, "ja"));
 await mkdir("client/public/data", { recursive: true });
 await writeFile(
   "client/public/data/mental-health-medical-institutions.json",
-  `${JSON.stringify({ generatedAt: new Date().toISOString(), coverage: sources.map(source => source.area), items: records }, null, 2)}\n`,
+  `${JSON.stringify({ generatedAt: new Date().toISOString(), dataAsOf: publishedAt, coverage: [...wards.values()], items: records }, null, 2)}\n`,
   "utf8"
 );
-console.log(`Generated ${records.length} mental-health medical institutions.`);
+console.log(`Generated ${records.length} mental-health medical institutions across ${new Set(records.map(item => item.area)).size} wards.`);

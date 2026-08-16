@@ -290,7 +290,7 @@ export default function Support() {
           <CardContent className="flex flex-col items-start gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-lg font-bold"><Hospital className="h-5 w-5 text-green-800" />医療機関への相談を考えている方へ</h2>
-              <p className="mt-2 text-sm leading-6 text-foreground/75">東京都の公式オープンデータから、精神科・心療内科の候補を地域や診療科で検索できます。</p>
+              <p className="mt-2 text-sm leading-6 text-foreground/75">厚生労働省の公式オープンデータから、精神科・心療内科の候補を地域や診療科で検索できます。</p>
             </div>
             <Button className="shrink-0" variant="outline" onClick={() => navigate("/medical-support")}>精神科・心療内科を探す</Button>
           </CardContent>

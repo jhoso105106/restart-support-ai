@@ -147,7 +147,7 @@ export default function Home() {
               <CardHeader>
                 <Hospital className="w-8 h-8 text-accent mb-2" />
                 <CardTitle>精神科・心療内科を探す</CardTitle>
-                <CardDescription>東京都の公式オープンデータから医療機関を検索</CardDescription>
+                <CardDescription>厚生労働省の公式オープンデータから医療機関を検索</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline" onClick={() => navigate("/medical-support")}>

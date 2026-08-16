@@ -384,7 +384,7 @@ export default function Mood() {
                 </Button>
               </div>
               <div className="rounded-xl border border-green-800/20 bg-green-50/70 p-4">
-                <p className="mb-3 text-sm leading-6">医療機関への相談も選択肢の一つです。希望する場合は、東京都の公式データから精神科・心療内科を探せます。</p>
+                <p className="mb-3 text-sm leading-6">医療機関への相談も選択肢の一つです。希望する場合は、厚生労働省の公式データから精神科・心療内科を探せます。</p>
                 <Button className="w-full" variant="outline" onClick={() => navigate("/medical-support")}>
                   精神科・心療内科を探す
                 </Button>
