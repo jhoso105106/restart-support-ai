@@ -172,7 +172,7 @@ export default function Interview() {
         score,
       }]);
       toast.success("セッションを保存しました");
-      navigate("/history");
+      window.location.assign("/history");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "セッションの保存に失敗しました");
     } finally {
