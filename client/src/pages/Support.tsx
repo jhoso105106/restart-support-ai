@@ -124,6 +124,7 @@ export default function Support() {
   const [diagnosisNeed, setDiagnosisNeed] = useState("employment");
   const [diagnosisMethod, setDiagnosisMethod] = useState<ConsultationMethod>("any");
   const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null);
+  const [expandedRecommendation, setExpandedRecommendation] = useState<string | number | null>(null);
 
   // Highlighting when navigated from AI (e.g., /support?highlight=tokyo-mental-health-welfare-center&reason=...)
   const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -205,6 +206,7 @@ export default function Support() {
   const runDiagnosis = () => {
     const ranked = rankResources(resources, diagnosisRegion, diagnosisNeed, diagnosisMethod);
     setRecommendations(ranked);
+    setExpandedRecommendation(null);
     setSelectedCategory(diagnosisNeed);
     setSelectedRegion(diagnosisRegion);
     window.setTimeout(() => document.getElementById("recommendation-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
@@ -259,7 +261,25 @@ export default function Support() {
                   <div className="mb-3 flex items-center justify-between"><span className="rounded-full bg-green-700 px-3 py-1 text-sm font-bold text-white">おすすめ {index + 1}</span><span className="text-sm font-bold text-green-800">適合度 {item.score}点</span></div>
                   <h3 className="mb-3 text-lg font-bold">{item.resource.name}</h3>
                   <ul className="mb-5 space-y-2 text-sm text-foreground/75">{item.reasons.map(reason => <li key={reason}>✓ {reason}</li>)}</ul>
-                  <Button className="w-full" variant="outline" onClick={() => document.getElementById(`resource-${item.resource.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}>詳しい情報を見る</Button>
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    aria-expanded={expandedRecommendation === item.resource.id}
+                    onClick={() => setExpandedRecommendation(current => current === item.resource.id ? null : item.resource.id)}
+                  >
+                    {expandedRecommendation === item.resource.id ? "詳細を閉じる" : "詳しい情報を見る"}
+                  </Button>
+                  {expandedRecommendation === item.resource.id && (
+                    <div className="mt-4 space-y-3 rounded-xl border border-green-800/20 bg-green-50/70 p-4 text-sm">
+                      {item.resource.description && <p>{item.resource.description}</p>}
+                      {item.resource.address && <div className="flex gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-green-800" /><span>{item.resource.address}</span></div>}
+                      {item.resource.phone && <div className="flex gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-green-800" /><a className="font-bold text-green-900 underline" href={`tel:${item.resource.phone}`}>{item.resource.phone}</a></div>}
+                      <div className="border-t border-green-900/15 pt-3 text-xs text-foreground/70">
+                        <p>データ更新日：{item.resource.lastUpdated}</p>
+                        <a className="mt-2 inline-flex items-center gap-1 font-bold text-green-900 underline" href={item.resource.portalUrl ?? item.resource.sourceUrl} target="_blank" rel="noopener noreferrer">東京都オープンデータの出典を見る<ExternalLink className="h-3 w-3" /></a>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>)}
             </div>
