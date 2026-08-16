@@ -6,7 +6,7 @@ type WorkersAi = {
       response_format: { type: "json_object" };
       max_tokens: number;
     }
-  ): Promise<{ response: string }>;
+  ): Promise<{ response: string | MoodResponse }>;
 };
 
 type Env = {
@@ -23,7 +23,7 @@ type MoodResponse = {
   suggestedAction: "practice_interview" | "consult_window" | "community_activity" | "rest";
 };
 
-const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 const MAX_SITUATION_LENGTH = 4_000;
 const CRISIS_KEYWORDS = ["自殺", "死", "消えたい", "終わりにしたい", "自傷", "傷つけたい"];
 
@@ -46,6 +46,32 @@ const isMoodResponse = (value: unknown): value is MoodResponse => {
       String(response.suggestedAction)
     )
   );
+};
+
+const parseMoodResponse = (value: string | MoodResponse): MoodResponse | null => {
+  if (isMoodResponse(value)) return value;
+  const text = value.trim();
+  const candidates = [
+    text,
+    text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, ""),
+    text.match(/\{[\s\S]*\}/)?.[0] ?? "",
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const parsed: unknown = JSON.parse(candidate);
+      if (isMoodResponse(parsed)) return parsed;
+    } catch {
+      // Try the next common response shape.
+    }
+  }
+
+  // Even when JSON mode is not followed exactly, keep a safe, useful message.
+  if (text && text.length <= 500 && !text.startsWith("{")) {
+    return { message: text.replace(/^```|```$/g, "").trim(), suggestedAction: "rest" };
+  }
+  return null;
 };
 
 export const onRequestPost = async ({
@@ -92,7 +118,7 @@ export const onRequestPost = async ({
     return jsonResponse({ error: "AIサービスを利用できません。" }, 503);
   }
 
-  let result: { response: string };
+  let result: { response: string | MoodResponse };
   try {
     result = await env.AI.run(MODEL, {
       messages: [
@@ -115,7 +141,7 @@ suggestedAction は practice_interview, consult_window, community_activity, rest
         },
       ],
       response_format: { type: "json_object" },
-      max_tokens: 400,
+      max_tokens: 220,
     });
   } catch (error) {
     console.error("Workers AI mood request failed:", error);
@@ -123,8 +149,8 @@ suggestedAction は practice_interview, consult_window, community_activity, rest
   }
 
   try {
-    const response = JSON.parse(result.response) as unknown;
-    if (!isMoodResponse(response)) {
+    const response = parseMoodResponse(result.response);
+    if (!response) {
       throw new Error("Invalid response format");
     }
 
