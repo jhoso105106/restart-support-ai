@@ -396,3 +396,47 @@ button:active {
   .sacred-geometry-bg:not(.kokoro-shell) > main.container { padding-top:30px; }
   .sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] { border-radius:22px; }
 }
+
+/* Shared response presentation: a calm letter from Kokoronavi */
+.kokoro-letter {
+  position: relative;
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid rgba(93, 68, 39, .28);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(rgba(255, 252, 242, .96), rgba(255, 250, 235, .96)),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(95, 121, 83, .08) 32px);
+  box-shadow: 0 18px 42px rgba(68, 50, 28, .2), inset 0 1px rgba(255, 255, 255, .9);
+  padding: clamp(1.5rem, 5vw, 3.25rem);
+}
+.kokoro-letter::before,
+.kokoro-letter::after {
+  content: "";
+  position: absolute;
+  width: 9rem;
+  height: 9rem;
+  border: 1px solid rgba(91, 139, 82, .14);
+  border-radius: 58% 42% 62% 38%;
+  pointer-events: none;
+}
+.kokoro-letter::before { top: -5.5rem; left: -4rem; transform: rotate(28deg); }
+.kokoro-letter::after { right: -4.5rem; bottom: -5.5rem; transform: rotate(-24deg); }
+.kokoro-letter__ornament { display: flex; align-items: center; justify-content: center; gap: .75rem; color: #71935e; }
+.kokoro-letter__ornament span { width: min(5rem, 18vw); height: 1px; background: rgba(80, 112, 68, .3); }
+.kokoro-letter__header { position: relative; z-index: 1; margin: 1rem auto 1.75rem; text-align: center; }
+.kokoro-letter__eyebrow { display: flex; align-items: center; justify-content: center; gap: .45rem; color: #6b8359; font-size: .78rem; font-weight: 700; letter-spacing: .12em; }
+.kokoro-letter__header h2 { margin-top: .55rem; font-size: clamp(1.5rem, 4vw, 2.15rem); color: var(--primary); }
+.kokoro-letter__body { position: relative; z-index: 1; color: color-mix(in oklch, var(--foreground) 88%, white); line-height: 1.9; }
+.kokoro-letter__footer { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: flex-end; gap: .75rem; margin-top: 2rem; color: #617b52; }
+.kokoro-letter__footer p { text-align: right; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: .9rem; line-height: 1.7; }
+.kokoro-letter__footer span { display: block; font-size: 1.05rem; font-weight: 700; letter-spacing: .08em; }
+.kokoro-letter__actions { position: relative; z-index: 1; display: flex; gap: .75rem; margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid rgba(93, 68, 39, .18); }
+.kokoro-letter__actions > * { flex: 1; }
+
+@media (max-width: 639px) {
+  .kokoro-letter { border-radius: 1.35rem; padding: 1.4rem 1.1rem; }
+  .kokoro-letter__actions { flex-direction: column; }
+}

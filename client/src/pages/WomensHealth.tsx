@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
+import KokoroLetter from "@/components/KokoroLetter";
 
 const CAREER_CATEGORIES = [
   { value: "child_rearing", label: "育児との両立支援" },
@@ -220,16 +221,11 @@ export default function WomensHealth() {
           </Card>
 
           {careerAdvice && (
-            <Card>
-              <CardHeader>
-                <CardTitle>AIからのアドバイス</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <KokoroLetter title="あなたのキャリアに寄せて">
                 <p className="whitespace-pre-wrap leading-relaxed text-foreground/80">
                   {careerAdvice}
                 </p>
-              </CardContent>
-            </Card>
+            </KokoroLetter>
           )}
 
           {careerQuestions.length > 0 && (

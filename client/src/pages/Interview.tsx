@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
+import KokoroLetter from "@/components/KokoroLetter";
 import { toast } from "sonner";
 import { saveInterviewHistory } from "@/lib/history-api";
 
@@ -300,11 +301,25 @@ export default function Interview() {
         )}
 
         {step === "feedback" && feedback && (
-          <Card className="max-w-3xl mx-auto">
-            <CardHeader>
-              <CardTitle>フィードバック</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <KokoroLetter
+            title="面接練習の振り返り"
+            eyebrow="ココロナビからのフィードバック"
+            actions={
+              <>
+                <Button variant="outline" onClick={handleNextQuestion}>
+                  {currentQuestionIndex < questions.length - 1 ? "次の質問へ" : "完了"}
+                </Button>
+                <Button onClick={handleSaveSession} disabled={loading}>
+                  {loading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />保存中...</>
+                  ) : (
+                    "セッションを保存"
+                  )}
+                </Button>
+              </>
+            }
+          >
+            <div className="space-y-6">
               <div className="space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
@@ -342,34 +357,8 @@ export default function Interview() {
                   </p>
                 </div>
               </div>
-
-              <div className="flex gap-3">
-                <Button
-                  className="flex-1"
-                  variant="outline"
-                  onClick={handleNextQuestion}
-                >
-                  {currentQuestionIndex < questions.length - 1
-                    ? "次の質問へ"
-                    : "完了"}
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveSession}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      保存中...
-                    </>
-                  ) : (
-                    "セッションを保存"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </KokoroLetter>
         )}
       </div>
     </div>
