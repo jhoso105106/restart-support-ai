@@ -12,7 +12,13 @@ import {
   type HistoryType,
   type MoodHistoryItem,
 } from "@/lib/history-api";
-import { Loader2, TrendingUp } from "lucide-react";
+import {
+  HeartPulse,
+  Loader2,
+  MessageCircleHeart,
+  Mic2,
+  TrendingUp,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { useLocation } from "wouter";
@@ -190,6 +196,66 @@ const HistoryCard = ({ item }: { item: HistoryItem }) => {
   );
 };
 
+const timelineMeta = {
+  mood: {
+    label: "気分チェック",
+    icon: HeartPulse,
+    dotClassName: "border-amber-300 bg-amber-100 text-amber-800",
+  },
+  counseling: {
+    label: "AI相談",
+    icon: MessageCircleHeart,
+    dotClassName: "border-emerald-300 bg-emerald-100 text-emerald-800",
+  },
+  interview: {
+    label: "面接練習",
+    icon: Mic2,
+    dotClassName: "border-sky-300 bg-sky-100 text-sky-800",
+  },
+} as const;
+
+const HistoryTimeline = ({ items }: { items: HistoryItem[] }) => (
+  <section aria-labelledby="timeline-title" className="space-y-4">
+    <div className="flex items-center gap-2 px-1">
+      <MessageCircleHeart className="h-5 w-5 text-primary" aria-hidden="true" />
+      <h2 id="timeline-title" className="text-xl font-bold">
+        あなたの歩み
+      </h2>
+    </div>
+    <p className="px-1 text-sm text-foreground/65">
+      気分チェック、AI相談、面接練習を新しい順にまとめています。
+    </p>
+    <ol className="space-y-0" aria-label="活動履歴の時系列">
+      {items.map((item, index) => {
+        const meta = timelineMeta[item.type];
+        const Icon = meta.icon;
+        const isLast = index === items.length - 1;
+
+        return (
+          <li key={`${item.type}-${item.id}`} className="relative grid grid-cols-[2.75rem_minmax(0,1fr)] gap-3 pb-5">
+            {!isLast && (
+              <span
+                className="absolute bottom-0 left-[1.34rem] top-11 w-px bg-border"
+                aria-hidden="true"
+              />
+            )}
+            <div className="relative z-10 flex flex-col items-center pt-2">
+              <span
+                className={`grid h-10 w-10 place-items-center rounded-full border-2 ${meta.dotClassName}`}
+                title={meta.label}
+              >
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">{meta.label}</span>
+              </span>
+            </div>
+            <HistoryCard item={item} />
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+);
+
 export default function History() {
   const [, navigate] = useLocation();
   const [filter, setFilter] = useState<Filter>("all");
@@ -267,7 +333,11 @@ export default function History() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {items.map(item => <HistoryCard key={`${item.type}-${item.id}`} item={item} />)}
+              {filter === "all" ? (
+                <HistoryTimeline items={items} />
+              ) : (
+                items.map(item => <HistoryCard key={`${item.type}-${item.id}`} item={item} />)
+              )}
             </div>
           )}
         </div>
