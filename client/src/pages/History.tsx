@@ -1,8 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getHistory, type HistoryItem, type HistoryType } from "@/lib/history-api";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import {
+  getHistory,
+  type HistoryItem,
+  type HistoryType,
+  type MoodHistoryItem,
+} from "@/lib/history-api";
+import { Loader2, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
 
@@ -16,6 +28,102 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
 ];
 
 const formatDate = (value: string) => new Date(`${value}Z`).toLocaleString("ja-JP");
+
+const moodChartConfig = {
+  mood: {
+    label: "気分",
+    color: "var(--chart-3)",
+  },
+} satisfies ChartConfig;
+
+const MoodSummary = ({ items }: { items: MoodHistoryItem[] }) => {
+  if (items.length === 0) return null;
+
+  const chronologicalItems = [...items].reverse();
+  const average = items.reduce((sum, item) => sum + item.mood, 0) / items.length;
+  const chartData = chronologicalItems.map(item => ({
+    mood: item.mood,
+    date: new Date(`${item.createdAt}Z`).toLocaleDateString("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+    }),
+    dateTime: formatDate(item.createdAt),
+  }));
+  const latest = items[0];
+
+  return (
+    <Card aria-labelledby="mood-summary-title">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-center gap-2">
+          <TrendingUp className="h-5 w-5 text-primary" aria-hidden="true" />
+          <CardTitle id="mood-summary-title" className="text-xl">
+            最近の気分の推移
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="grid grid-cols-3 gap-2 text-center sm:gap-4">
+          <div className="rounded-xl bg-primary/8 px-2 py-3">
+            <p className="text-xs text-foreground/65">平均</p>
+            <p className="mt-1 text-xl font-bold text-primary sm:text-2xl">
+              {average.toFixed(1)}<span className="text-sm font-medium">/5</span>
+            </p>
+          </div>
+          <div className="rounded-xl bg-primary/8 px-2 py-3">
+            <p className="text-xs text-foreground/65">最新</p>
+            <p className="mt-1 text-xl font-bold text-primary sm:text-2xl">
+              {latest.mood}<span className="text-sm font-medium">/5</span>
+            </p>
+          </div>
+          <div className="rounded-xl bg-primary/8 px-2 py-3">
+            <p className="text-xs text-foreground/65">記録数</p>
+            <p className="mt-1 text-xl font-bold text-primary sm:text-2xl">
+              {items.length}<span className="text-sm font-medium">件</span>
+            </p>
+          </div>
+        </div>
+
+        <ChartContainer
+          config={moodChartConfig}
+          className="h-[220px] w-full aspect-auto"
+          role="img"
+          aria-label={`直近${items.length}件の気分の推移。平均${average.toFixed(1)}、最新${latest.mood}。`}
+        >
+          <LineChart data={chartData} margin={{ top: 10, right: 12, left: -20, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} />
+            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tickLine={false} axisLine={false} />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(value, _name, item) => (
+                    <div className="space-y-1">
+                      <p className="text-foreground/65">{item.payload.dateTime}</p>
+                      <p className="font-medium">気分：{String(value)}/5</p>
+                    </div>
+                  )}
+                />
+              }
+            />
+            <Line
+              dataKey="mood"
+              type="monotone"
+              stroke="var(--color-mood)"
+              strokeWidth={3}
+              dot={{ r: 4, fill: "var(--color-mood)" }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ChartContainer>
+        <p className="text-center text-xs text-foreground/60">
+          直近{items.length}件の記録です。数値は診断ではなく、ご自身の振り返りの目安です。
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
 
 const HistoryCard = ({ item }: { item: HistoryItem }) => {
   if (item.type === "mood") {
@@ -86,6 +194,7 @@ export default function History() {
   const [, navigate] = useLocation();
   const [filter, setFilter] = useState<Filter>("all");
   const [items, setItems] = useState<HistoryItem[]>([]);
+  const [moodItems, setMoodItems] = useState<MoodHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -93,7 +202,14 @@ export default function History() {
     setLoading(true);
     setError("");
     try {
-      setItems(await getHistory(filter, 50));
+      const [historyItems, recentMoodItems] = await Promise.all([
+        getHistory(filter, 50),
+        getHistory("mood", 7),
+      ]);
+      setItems(historyItems);
+      setMoodItems(
+        recentMoodItems.filter((item): item is MoodHistoryItem => item.type === "mood")
+      );
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "履歴を取得できませんでした。");
     } finally {
@@ -116,6 +232,8 @@ export default function History() {
               履歴はこのブラウザ内の匿名識別子に紐づきます。localStorageを消去すると以前の履歴へアクセスできなくなります。個人を特定できる情報は入力しないでください。
             </CardContent>
           </Card>
+
+          {!loading && !error && <MoodSummary items={moodItems} />}
 
           <div className="flex flex-wrap gap-2" aria-label="履歴の種類">
             {FILTERS.map(option => (
