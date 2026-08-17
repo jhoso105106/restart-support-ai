@@ -375,7 +375,6 @@ button:active {
   content:"";
   position:absolute;
   z-index:0;
-  top:clamp(165px,16vw,230px);
   width:clamp(190px,17vw,240px);
   height:clamp(285px,25.5vw,360px);
   opacity:.84;
@@ -385,6 +384,7 @@ button:active {
 }
 .sacred-geometry-bg:not(.kokoro-shell)::before {
   --mascot-tilt:-1.5deg;
+  top:clamp(255px,24vw,340px);
   left:max(12px,calc(50% - 38rem));
   background:url('/images/kokonyabi-leaf-web.png') center / contain no-repeat;
   transform:rotate(var(--mascot-tilt));
@@ -392,6 +392,7 @@ button:active {
 }
 .sacred-geometry-bg:not(.kokoro-shell)::after {
   --mascot-tilt:1.5deg;
+  top:clamp(145px,15vw,210px);
   right:max(12px,calc(50% - 38rem));
   background:url('/images/kokonyabi-letter-web.png') center / contain no-repeat;
   transform:rotate(var(--mascot-tilt));

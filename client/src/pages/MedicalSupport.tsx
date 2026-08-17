@@ -52,7 +52,7 @@ export default function MedicalSupport() {
     <div className="min-h-screen bg-background sacred-geometry-bg">
       <KokoroHeader />
       <main className="container py-8 sm:py-12">
-        <div className="mx-auto max-w-5xl space-y-6">
+        <div className="mx-auto max-w-3xl space-y-6">
           <Card>
             <CardHeader><CardTitle className="flex items-center justify-center gap-3"><Hospital className="h-7 w-7 text-green-700" />精神科・心療内科を探す</CardTitle></CardHeader>
             <CardContent className="space-y-6">
