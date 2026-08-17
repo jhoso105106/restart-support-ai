@@ -376,7 +376,21 @@ button:active {
   background: radial-gradient(ellipse at 30% 25%,#477843 0 12%,transparent 13%), radial-gradient(ellipse at 65% 40%,#6c934d 0 13%,transparent 14%), radial-gradient(ellipse at 32% 62%,#477843 0 11%,transparent 12%), linear-gradient(60deg,transparent 48%,#477843 49% 52%,transparent 53%);
 }
 .sacred-geometry-bg:not(.kokoro-shell)::before { left:-28px; top:230px; transform:rotate(-20deg); }
-.sacred-geometry-bg:not(.kokoro-shell)::after { right:-22px; bottom:28px; transform:rotate(155deg); }
+.sacred-geometry-bg:not(.kokoro-shell)::after {
+  right: clamp(-42px, -2vw, -20px);
+  top: clamp(150px, 18vw, 250px);
+  width: clamp(210px, 20vw, 300px);
+  height: clamp(315px, 30vw, 450px);
+  opacity: .82;
+  background: url('/images/kokonyabi-letter-web.png') center / contain no-repeat;
+  filter: drop-shadow(0 14px 18px rgba(67,50,30,.2));
+  transform: rotate(1.5deg);
+  animation: kokonyabi-float 6s ease-in-out infinite;
+}
+@keyframes kokonyabi-float {
+  0%, 100% { transform: translateY(0) rotate(1.5deg); }
+  50% { transform: translateY(-5px) rotate(.5deg); }
+}
 .sacred-geometry-bg:not(.kokoro-shell) > header { background:rgba(255,250,238,.92) !important; }
 .sacred-geometry-bg:not(.kokoro-shell) > .container,
 .sacred-geometry-bg:not(.kokoro-shell) > main.container { position:relative; z-index:1; padding-top:clamp(40px,7vw,90px); padding-bottom:clamp(55px,9vw,110px); }
@@ -392,9 +406,14 @@ button:active {
 .sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] [data-slot="button"][class*="bg-primary"] { min-height:58px; font-size:1.1rem; }
 
 @media (max-width:639px) {
+  .sacred-geometry-bg:not(.kokoro-shell)::after { display:none; }
   .sacred-geometry-bg:not(.kokoro-shell) > .container,
   .sacred-geometry-bg:not(.kokoro-shell) > main.container { padding-top:30px; }
   .sacred-geometry-bg:not(.kokoro-shell) [data-slot="card"] { border-radius:22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sacred-geometry-bg:not(.kokoro-shell)::after { animation: none; }
 }
 
 /* Shared response presentation: a calm letter from Kokoronavi */
