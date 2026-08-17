@@ -23,13 +23,22 @@ export default function KokoroLetter({
         <Leaf className="h-5 w-5" />
         <span />
       </div>
-      <header className="kokoro-letter__header">
-        <p className="kokoro-letter__eyebrow">
-          <Sparkles className="h-4 w-4" aria-hidden="true" />
-          {eyebrow}
-        </p>
-        <h2>{title}</h2>
-      </header>
+      <div className="kokoro-letter__intro">
+        <header className="kokoro-letter__header">
+          <p className="kokoro-letter__eyebrow">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            {eyebrow}
+          </p>
+          <h2>{title}</h2>
+        </header>
+        <img
+          className="kokoro-letter__mascot"
+          src="/images/kokonyabi-letter-web.png"
+          alt="手紙を届ける案内猫のここにゃび"
+          width="180"
+          height="270"
+        />
+      </div>
       <div className="kokoro-letter__body">{children}</div>
       <footer className="kokoro-letter__footer">
         <p>
