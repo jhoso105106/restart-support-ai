@@ -12,7 +12,7 @@ type WorkersAi = {
       response_format: { type: "json_object" };
       max_tokens: number;
     }
-  ): Promise<{ response: string }>;
+  ): Promise<{ response: string | Record<string, unknown> }>;
 };
 
 type PagesContext = {
@@ -20,7 +20,8 @@ type PagesContext = {
   env: { AI: WorkersAi };
 };
 
-const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+// Use the same model as the working mood endpoint on this account.
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 const CATEGORIES: CareerCategory[] = [
   "child_rearing",
   "career_resume",
@@ -81,7 +82,7 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
       ? `面接やキャリア相談の準備に使える実践的な質問を5件作成し、それぞれに短い回答のポイントを付けてください。\n\n{"questions":[{"question":"質問文","tips":"回答のポイント"}]}`
       : `相談者が次の一歩を選べる、温かく具体的なアドバイスを日本語で300文字以内にまとめてください。\n\n{"advice":"アドバイス本文"}`;
 
-  let result: { response: string };
+  let result: { response: string | Record<string, unknown> };
   try {
     result = await env.AI.run(MODEL, {
       messages: [
@@ -104,7 +105,17 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
   }
 
   try {
-    const response = JSON.parse(result.response) as Record<string, unknown>;
+    let response: Record<string, unknown>;
+    if (typeof result.response === "string") {
+      const text = result.response.trim();
+      const jsonText =
+        text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)?.[1] ??
+        text.match(/\{[\s\S]*\}/)?.[0] ??
+        text;
+      response = JSON.parse(jsonText) as Record<string, unknown>;
+    } else {
+      response = result.response;
+    }
     if (action === "advice") {
       if (typeof response.advice !== "string" || !response.advice.trim()) {
         throw new Error("Invalid advice format");

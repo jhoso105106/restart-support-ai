@@ -51,6 +51,7 @@ export default function Interview() {
   const [feedback, setFeedback] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  const generateQuestionsMutation = trpc.interview.generateQuestions.useMutation();
   const generateFeedbackMutation = trpc.interview.generateFeedback.useMutation();
 
   const handleGenerateQuestions = async () => {
@@ -71,6 +72,31 @@ export default function Interview() {
       });
 
       const responseText = await response.text();
+
+      // `npm run dev` serves the Express/tRPC API but not Cloudflare Pages
+      // Functions. Fall back to the existing tRPC implementation only when
+      // the Pages Function route is absent; Cloudflare deployments continue
+      // to use Workers AI through the REST endpoint above.
+      if (
+        response.status === 404 ||
+        (import.meta.env.DEV && responseText.trimStart().startsWith("<"))
+      ) {
+        const fallback = await generateQuestionsMutation.mutateAsync({
+          jobTitle,
+          jobDescription: jobDescription || undefined,
+        });
+        if (!fallback.success || !fallback.questions) {
+          throw new Error(fallback.error || "質問の生成に失敗しました");
+        }
+        setQuestions(fallback.questions);
+        setCurrentQuestionIndex(0);
+        setAnswer("");
+        setFeedback(null);
+        setStep("practice");
+        toast.success("質問を生成しました");
+        return;
+      }
+
       let result: { questions?: InterviewQuestion[]; error?: string };
       try {
         result = JSON.parse(responseText) as {

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import KokoroHeader from "@/components/KokoroHeader";
 import KokoroLetter from "@/components/KokoroLetter";
+import { trpc } from "@/lib/trpc";
 
 const CAREER_CATEGORIES = [
   { value: "child_rearing", label: "育児との両立支援" },
@@ -20,6 +21,12 @@ const CAREER_CATEGORIES = [
   { value: "work_life_balance", label: "仕事と生活のバランス" },
   { value: "interview_for_mothers", label: "母親向けの面接対策" },
 ];
+
+type CareerSupportResult = {
+  advice?: string;
+  questions?: Array<{ id: number; question: string; tips: string }>;
+  error?: string;
+};
 
 export default function WomensHealth() {
   const [, navigate] = useLocation();
@@ -39,6 +46,8 @@ export default function WomensHealth() {
   const [careerHistory, setCareerHistory] = useState<CounselingHistoryItem[]>([]);
   const [isLoadingCareerHistory, setIsLoadingCareerHistory] = useState(true);
   const [careerHistoryError, setCareerHistoryError] = useState("");
+  const generateAdviceMutation = trpc.femtech.generateCareerAdvice.useMutation();
+  const generateQuestionsMutation = trpc.femtech.generateCareerQuestions.useMutation();
 
   const loadCareerHistory = useCallback(async () => {
     setIsLoadingCareerHistory(true);
@@ -68,7 +77,9 @@ export default function WomensHealth() {
     void loadCareerHistory();
   }, [loadCareerHistory]);
 
-  const requestCareerSupport = async (action: "advice" | "questions") => {
+  const requestCareerSupport = async (
+    action: "advice" | "questions"
+  ): Promise<CareerSupportResult> => {
     const response = await fetch("/api/femtech/career", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -79,11 +90,43 @@ export default function WomensHealth() {
       }),
     });
     const responseText = await response.text();
-    let result: {
-      advice?: string;
-      questions?: Array<{ id: number; question: string; tips: string }>;
-      error?: string;
-    };
+
+    // Cloudflare Pages Functions are not mounted by the Express development
+    // server. In that environment, reuse the existing tRPC implementation.
+    if (
+      response.status === 404 ||
+      (import.meta.env.DEV && responseText.trimStart().startsWith("<"))
+    ) {
+      const input = {
+        category: selectedCategory as
+          | "child_rearing"
+          | "career_resume"
+          | "work_life_balance"
+          | "interview_for_mothers",
+        context: careerContext || undefined,
+      };
+      if (action === "advice") {
+        const fallback = await generateAdviceMutation.mutateAsync(input);
+        if (!fallback.success || !fallback.advice) {
+          throw new Error(fallback.error || "アドバイスを取得できませんでした");
+        }
+        return { advice: fallback.advice };
+      }
+
+      const fallback = await generateQuestionsMutation.mutateAsync(input);
+      if (!fallback.success || !fallback.questions) {
+        throw new Error(fallback.error || "質問を取得できませんでした");
+      }
+      return {
+        questions: fallback.questions.map((item, index) => ({
+          id: index + 1,
+          question: item.question,
+          tips: item.tips,
+        })),
+      };
+    }
+
+    let result: CareerSupportResult;
     try {
       result = JSON.parse(responseText);
     } catch {

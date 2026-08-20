@@ -12,7 +12,7 @@ type WorkersAi = {
       response_format: { type: "json_object" };
       max_tokens: number;
     }
-  ): Promise<{ response: string }>;
+  ): Promise<{ response: string | Record<string, unknown> }>;
 };
 
 type Env = {
@@ -24,7 +24,9 @@ type PagesContext = {
   env: Env;
 };
 
-const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+// Keep the model aligned with the mood endpoint, which is verified to work on
+// this Cloudflare account.
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 const MAX_JOB_TITLE_LENGTH = 200;
 const MAX_JOB_DESCRIPTION_LENGTH = 6_000;
 
@@ -86,7 +88,7 @@ export const onRequestPost = async ({
     );
   }
 
-  let result: { response: string };
+  let result: { response: string | Record<string, unknown> };
   try {
     result = await env.AI.run(MODEL, {
       messages: [
@@ -127,12 +129,19 @@ ${typeof jobDescription === "string" && jobDescription.trim() ? jobDescription.t
     );
   }
 
-  let responseBody: unknown;
-  try {
-    responseBody = JSON.parse(result.response);
-  } catch {
-    console.error("Workers AI returned invalid JSON for interview questions");
-    return jsonResponse({ error: "質問の生成結果を読み取れませんでした。" }, 502);
+  let responseBody: unknown = result.response;
+  if (typeof result.response === "string") {
+    const text = result.response.trim();
+    const jsonText =
+      text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)?.[1] ??
+      text.match(/\{[\s\S]*\}/)?.[0] ??
+      text;
+    try {
+      responseBody = JSON.parse(jsonText);
+    } catch {
+      console.error("Workers AI returned invalid JSON for interview questions");
+      return jsonResponse({ error: "質問の生成結果を読み取れませんでした。" }, 502);
+    }
   }
 
   const rawQuestions =
