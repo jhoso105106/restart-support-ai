@@ -1,143 +1,123 @@
-# 再スタート応援AI
+# ペット似顔絵 - アクリル絵の具で描く
 
-50代以上の求職者の再就職・キャリア再開を支援するReactアプリです。Cloudflare Pages FunctionsとWorkers AIを利用し、気分チェックとAI相談の履歴をCloudflare D1へ保存します。
+HTML/CSS/JavaScript で実装した、ペットの似顔絵を依頼するホームページです。GitHub Pages で公開できます。
 
-## D1履歴機能
+## 📁 ファイル構成
 
-- 気分チェック履歴の保存・取得
-- AIキャリア相談履歴の保存・取得
-- `/history` での履歴一覧
-- 面接履歴API（画面からの保存は後続フェーズ）
+```
+├── index.html          # メインページ
+├── styles.css          # スタイル
+├── script.js           # JavaScriptの機能
+└── README.md           # このファイル
+```
 
-認証は使用しません。初回アクセス時にブラウザでランダムUUIDを生成し、`localStorage` の `restart-support-history-user-id` に保存します。APIは `X-User-Id` ヘッダーのUUIDで履歴を分離します。
+## ✨ 機能
 
-この方式は認証ではありません。UUIDを知っている利用者からのアクセスは防げず、localStorageを消去すると以前の履歴へアクセスできなくなります。デモには氏名、連絡先、医療情報などの個人情報を入力しないでください。
+- ✅ **レスポンシブデザイン** - PC・タブレット・スマートフォンに対応
+- ✅ **作品ギャラリー** - 似顔絵の作品を展示
+- ✅ **料金表** - 3つのサイズと価格を表示
+- ✅ **依頼フォーム** - ペット情報や要望を入力
+- ✅ **FAQ** - よくある質問に回答
+- ✅ **お問い合わせ** - メールアドレスなど記載
+- ✅ **スムーズなUIアニメーション** - ホバーエフェクトなど
 
-## 必要環境
+## 🎨 デザイン特徴
 
-- Node.js 20以上
-- npm
-- Cloudflareアカウント
+- グラデーション配色（紫系）でプロフェッショナルな雰囲気
+- 各セクションはカード型で見やすく配置
+- ホバーエフェクトで交互性を向上
 
-## インストール
+## 🚀 GitHub Pages での公開方法
+
+### 1. リポジトリ設定
 
 ```bash
-npm install --legacy-peer-deps
+# 変更をコミット
+git add .
+git commit -m "Add pet portrait website"
+git push origin jhoso105106-pet-portrait-website
 ```
 
-## D1の作成
+### 2. GitHub Pages 設定
 
-```bash
-npx wrangler login
-npx wrangler d1 create restart-support-history
+1. GitHub の リポジトリページに行く
+2. Settings → Pages
+3. "Build and deployment" セクションで：
+   - Source: `Deploy from a branch`
+   - Branch: `main` → `/(root)`
+   - Save をクリック
+
+4. 数秒待つと URL が表示されます
+
+## 📝 カスタマイズ方法
+
+### メールアドレス変更
+
+`index.html` の以下の部分を変更：
+
+```html
+<a href="mailto:info@example.com">info@example.com</a>
 ```
 
-表示された `database_id` で `wrangler.toml` のプレースホルダーを置き換えてください。
+### Instagram アカウント変更
 
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "restart-support-history"
-database_id = "Cloudflareが発行したID"
-migrations_dir = "migrations"
+```html
+<a href="https://instagram.com/YOUR_ACCOUNT" target="_blank">@YOUR_ACCOUNT</a>
 ```
 
-## ローカル開発
+### 作品ギャラリー更新
 
-ローカルD1へmigrationを適用します。
+実際の画像を用意して、`index.html` の画像 URL を変更：
 
-```bash
-npm run d1:migrate:local
+```html
+<img src="images/dog-portrait-1.jpg" alt="犬の似顔絵">
 ```
 
-Pages Functionsを含む状態で起動します。
+### 料金変更
 
-```bash
-npm run build
-npm run pages:dev
+`index.html` の pricing セクションで金額を編集：
+
+```html
+<p class="price">¥5,000</p>
 ```
 
-WranglerのローカルD1は本番D1と別データです。通常の `npm run dev` はExpress/Viteだけを起動するため、D1 Pages Functionの確認には `npm run pages:dev` を使用してください。
+## 🔧 フォーム機能
 
-## 本番D1へのmigration
+現在はフロントエンドのみで実装しています。実際にメール送信する場合は：
 
-```bash
-npm run d1:migrate:remote
+### オプション 1: Formspree（簡単）
+
+1. https://formspree.io/ にアクセス
+2. ログイン＆新規フォーム作成
+3. form の `action` を変更：
+
+```html
+<form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
 ```
 
-Cloudflare PagesのPreviewとProductionそれぞれに次のbindingを設定します。
+### オプション 2: GitHub Actions + メール
 
-| 種別 | Binding | 対象 |
-|---|---|---|
-| D1 database | `DB` | `restart-support-history` |
-| Workers AI | `AI` | 利用するCloudflareアカウント |
+別途スクリプト実装が必要です。
 
-bindingまたはmigrationを変更した後はPagesを再デプロイしてください。
+## 📱 ブラウザ対応
 
-## 履歴API
+- Chrome ✅
+- Firefox ✅
+- Safari ✅
+- Edge ✅
 
-すべてのリクエストに次のヘッダーが必要です。
+## 🎯 次のステップ
 
-```text
-X-User-Id: UUID
-```
+- [ ] 作品の実画像をアップロード
+- [ ] メール送信機能の実装
+- [ ] SNS リンクの追加
+- [ ] セキュリティ設定（フォーム検証など）
+- [ ] SEO 最適化
 
-### 取得
+## 📄 ライセンス
 
-```text
-GET /api/history?type=all&limit=50
-GET /api/history?type=mood&limit=5
-GET /api/history?type=counseling&limit=10
-GET /api/history?type=interview&limit=50
-```
+自由に使用・改変できます。
 
-`type` は `all`、`mood`、`counseling`、`interview` のいずれかです。`limit` は最大100件です。
+---
 
-### 気分履歴の保存
-
-```json
-{
-  "type": "mood",
-  "mood": 3,
-  "comment": "面接結果を待っていて少し不安"
-}
-```
-
-### AI相談履歴の保存
-
-```json
-{
-  "type": "counseling",
-  "consultation": "育児との両立支援",
-  "advice": "希望する勤務条件を整理してみましょう"
-}
-```
-
-### 面接履歴の保存
-
-APIのみ先行実装しています。
-
-```json
-{
-  "type": "interview",
-  "items": [
-    {
-      "question": "これまでの経験を教えてください",
-      "answer": "接客業を20年間経験しました",
-      "score": 4
-    }
-  ]
-}
-```
-
-## 検証
-
-```bash
-npm run check
-npm run build
-npm run test
-```
-
-## 既存MySQLとの境界
-
-D1履歴機能は既存のExpress、tRPC、MySQLとは独立しています。今回D1へ保存するのは新規の気分チェック履歴とAI相談履歴です。MySQLの既存データは移行せず、同じ操作を両DBへ二重保存しません。
+**ご質問やサポートが必要な場合は、お気軽にお声がけください！**

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ペット似顔絵 - アクリル絵の具で描く</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">🎨 ペット似顔絵</div>
+            <ul class="nav-links">
+                <li><a href="#home">ホーム</a></li>
+                <li><a href="#gallery">作品集</a></li>
+                <li><a href="#order">依頼する</a></li>
+                <li><a href="#contact">お問い合わせ</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ヒーロー セクション -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>大切なペットの笑顔を<br>アクリル画で永遠に</h1>
+            <p>あなたのペットの個性を活かした、温かみのある似顔絵をアクリル絵の具で描きます</p>
+            <button class="btn btn-primary" onclick="smoothScroll('order')">依頼する</button>
+        </div>
+    </section>
+
+    <!-- 特徴 セクション -->
+    <section class="features">
+        <div class="container">
+            <h2>ペット似顔絵の特徴</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🐾</span>
+                    <h3>個性を表現</h3>
+                    <p>ペットの個性や表情を丁寧に観察し、アクリル絵の具で表現します</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎨</span>
+                    <h3>高品質</h3>
+                    <p>プロの技術で、色鮮やかで長く保管できる作品をお届けします</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💝</span>
+                    <h3>大切な思い出</h3>
+                    <p>ペットとの思い出を形に。インテリアとしても飾れます</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <h3>迅速な対応</h3>
+                    <p>ご依頼から納品まで、丁寧かつ迅速にお対応します</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 作品集 -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2>作品集</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="dog-portrait-1.jpg" alt="犬の似顔絵">
+                    <div class="gallery-caption">
+                        <h3>柴犬ミックス</h3>
+                        <p>優しい瞳と毛並みを表現したアクリル画</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="cat-portrait-1.jpg" alt="猫の似顔絵">
+                    <div class="gallery-caption">
+                        <h3>白黒猫</h3>
+                        <p>つぶらな瞳とセーターの質感を表現</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="dog-portrait-2.jpg" alt="ウサギの似顔絵">
+                    <div class="gallery-caption">
+                        <h3>テリア系小型犬</h3>
+                        <p>抱っこされるペットの愛らしさを表現</p>
+                    </div>
+                </div>
+                <div class="gallery-item gallery-featured">
+                    <img src="parrot-portrait-1.jpg" alt="インコの似顔絵">
+                    <div class="gallery-caption">
+                        <h3>セキセイインコ</h3>
+                        <p>飼い主さんとのふれあいの瞬間</p>
+                    </div>
+                </div>
+            </div>
+            <p class="gallery-note">※ 画像はサンプルです。ご依頼いただくと実際の作風をご覧いただけます</p>
+        </div>
+    </section>
+
+    <!-- 価格表 -->
+    <section class="pricing">
+        <div class="container">
+            <h2>料金表</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>S サイズ</h3>
+                    <p class="price">¥5,000</p>
+                    <ul class="pricing-features">
+                        <li>15cm × 15cm</li>
+                        <li>シンプルな背景</li>
+                        <li>納期：2週間</li>
+                    </ul>
+                </div>
+                <div class="pricing-card featured">
+                    <h3>M サイズ</h3>
+                    <p class="price">¥8,000</p>
+                    <ul class="pricing-features">
+                        <li>20cm × 20cm</li>
+                        <li>背景込み</li>
+                        <li>納期：3週間</li>
+                    </ul>
+                    <span class="badge">おすすめ</span>
+                </div>
+                <div class="pricing-card">
+                    <h3>L サイズ</h3>
+                    <p class="price">¥12,000</p>
+                    <ul class="pricing-features">
+                        <li>30cm × 30cm</li>
+                        <li>凝った背景</li>
+                        <li>納期：4週間</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 依頼フォーム -->
+    <section id="order" class="order-section">
+        <div class="container">
+            <h2>依頼フォーム</h2>
+            <div class="form-container">
+                <form id="orderForm" class="order-form">
+                    <div class="form-group">
+                        <label for="petName">ペットの名前 *</label>
+                        <input type="text" id="petName" name="petName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="petType">ペットの種類 *</label>
+                        <select id="petType" name="petType" required>
+                            <option value="">選択してください</option>
+                            <option value="dog">犬</option>
+                            <option value="cat">猫</option>
+                            <option value="rabbit">ウサギ</option>
+                            <option value="bird">鳥</option>
+                            <option value="hamster">ハムスター</option>
+                            <option value="other">その他</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="petAge">ペットの年齢</label>
+                        <input type="text" id="petAge" name="petAge" placeholder="例：2歳">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">サイズ *</label>
+                        <select id="size" name="size" required>
+                            <option value="">選択してください</option>
+                            <option value="S">S サイズ (¥5,000)</option>
+                            <option value="M">M サイズ (¥8,000)</option>
+                            <option value="L">L サイズ (¥12,000)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="background">背景について</label>
+                        <textarea id="background" name="background" rows="3" placeholder="例：好きな色、ペットのお気に入りの場所など"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requests">その他ご要望</label>
+                        <textarea id="requests" name="requests" rows="3" placeholder="例：表情の指定、特別な要素を入れてほしいなど"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">お名前 *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">メールアドレス *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">電話番号</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">依頼内容を送信</button>
+                </form>
+                <div id="formMessage" class="form-message" style="display:none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq">
+        <div class="container">
+            <h2>よくあるご質問</h2>
+            <div class="faq-items">
+                <div class="faq-item">
+                    <h3 class="faq-question">納期はどのくらいですか？</h3>
+                    <p class="faq-answer">サイズによって異なります。S サイズは2週間、M サイズは3週間、L サイズは4週間を目安にしています。ご急ぎの場合はお気軽にお問い合わせください。</p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">複数のペットを描いてもらえますか？</h3>
+                    <p class="faq-answer">はい、可能です。その場合は料金が異なりますので、お問い合わせください。</p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">修正はしてもらえますか？</h3>
+                    <p class="faq-answer">完成後の修正はご相談ください。事前に要望をお聞きしてから制作いたします。</p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">支払い方法は？</h3>
+                    <p class="faq-answer">銀行振込、クレジットカード決済に対応しています。詳細はお問い合わせください。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- お問い合わせ -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>お問い合わせ</h2>
+            <div class="contact-info">
+                <p>ご質問やご依頼に関するお問い合わせは、下記の方法でお気軽にご連絡ください。</p>
+                <ul class="contact-list">
+                    <li>📧 メール：<a href="mailto:info@example.com">info@example.com</a></li>
+                    <li>📱 Instagram：<a href="https://instagram.com" target="_blank">@pet_portrait_art</a></li>
+                    <li>💬 依頼フォーム上部からも送信可能です</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ペット似顔絵 - アクリル絵の具で描く. All rights reserved.</p>
+            <p>Powered by GitHub Pages</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
