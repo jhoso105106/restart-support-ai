@@ -227,12 +227,19 @@ h2::after {
 
 .gallery-item {
     background: white;
-    border-radius: 15px;
-    overflow: hidden;
+    border-radius: 0;
+    overflow: visible;
     box-shadow: 0 15px 40px rgba(0,0,0,0.15);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     position: relative;
+    padding: 20px;
+    border: 20px solid;
+    border-color: #c4a747 #a0860c #8b7000 #d4af37;
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 5px rgba(0, 0, 0, 0.4),
+        0 15px 40px rgba(0, 0, 0, 0.2);
 }
 
 .gallery-item::before {
@@ -262,30 +269,14 @@ h2::after {
     height: 300px;
     object-fit: contain;
     background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-    padding: 40px;
+    padding: 0;
     box-sizing: border-box;
     position: relative;
     z-index: 1;
-    border: 15px solid;
-    border-image: linear-gradient(135deg, #d4af37 0%, #d4af37 30%, #a08d5d 50%, #d4af37 70%, #d4af37 100%) 1;
-    box-shadow: 
-        inset 0 2px 8px rgba(212, 175, 55, 0.8),
-        inset 0 -2px 8px rgba(80, 60, 20, 0.4),
-        0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .gallery-item::after {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    border: 2px solid rgba(212, 175, 55, 0.5);
-    border-radius: 8px;
-    pointer-events: none;
-    z-index: 0;
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0) 100%);
+    display: none;
 }
 
 .gallery-item.gallery-featured {
